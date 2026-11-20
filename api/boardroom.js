@@ -30,8 +30,8 @@ const PERSONAS = {
   bigpicture: "BIG PICTURE: vision and long-term thinking, asks 'where does this leave us in five years?' Uses analogies and connects ideas."
 };
 const LEVELS = {
-  starter: "LEVEL = STARTER: for curious beginners and young people (about age 12 and up). Use everyday words and relatable examples (a lemonade stand, a bakery, a bike shop, a first paycheck). Define every business word the first time you use it. Short sentences. Keep each spoken turn to 2-3 sentences (about 35-60 words).",
-  executive: "LEVEL = EXECUTIVE: MBA-style depth for adults and business people. Use real business vocabulary, frameworks and example math, but stay clear and conversational. Keep each spoken turn to 3-4 sentences (about 55-90 words)."
+  starter: "LEVEL = STARTER: for curious beginners and young people (about age 12 and up). Use everyday words and relatable examples (a lemonade stand, a bakery, a bike shop, a first paycheck). Define every business word the first time you use it. Short sentences. Keep each spoken turn to 1-2 sentences (about 20-45 words).",
+  executive: "LEVEL = EXECUTIVE: MBA-style depth for adults and business people. Use real business vocabulary, frameworks and example math, but stay clear and conversational. Keep each spoken turn to 2-3 sentences (about 35-70 words)."
 };
 
 const GROUND_RULES = `GROUND RULES (always):
@@ -47,11 +47,16 @@ const SCREEN = {
   type: "object",
   description: "One diagram for the boardroom wall screen that makes the point visual. Pick the kind that teaches best.",
   properties: {
-    kind: { type: "string", enum: ["bars", "waterfall", "flow", "cycle", "compare", "scale", "formula", "points"], description: "bars = compare a few amounts; waterfall = build from one total to another (revenue to profit, cash in to cash out); flow = steps in order; cycle = a loop (cash conversion cycle, flywheel); compare = two options side by side; scale = a trade-off and which way it leans; formula = an equation with example math; points = 3-5 key ideas." },
+    kind: { type: "string", enum: ["bars", "waterfall", "trend", "matrix", "flow", "cycle", "compare", "scale", "formula", "points"], description: "bars = compare a few amounts; waterfall = build from one total to another (revenue to profit, cash in to cash out); trend = lines over time with the direction called out (revenue vs costs by quarter, prices over years); matrix = a 2x2 grid placing ideas (impact vs effort, risk vs reward, SWOT); flow = steps in order; cycle = a loop (cash conversion cycle, flywheel); compare = two options side by side; scale = a trade-off and which way it leans; formula = an equation with example math; points = 3-5 key ideas. Pick whatever explains THIS point best and vary kinds." },
     title: { type: "string", description: "Short screen title, under 50 characters." },
     caption: { type: "string", description: "One sentence: what the diagram shows and why it matters." },
     unit: { type: "string", description: "bars/waterfall: unit like $, %, days, units. Use $ for money." },
     items: { type: "array", maxItems: 7, description: "bars: amounts to compare. waterfall: first item is the starting total (kind total), then deltas (negative to subtract), last item is the ending total (kind total).", items: { type: "object", properties: { label: { type: "string" }, value: { type: "number" }, kind: { type: "string", enum: ["total", "delta"] } }, required: ["label", "value"] } },
+    periods: { type: "array", maxItems: 8, items: { type: "string" }, description: "trend: the time labels along the bottom (Q1, Q2... or 2022, 2023...)." },
+    series: { type: "array", maxItems: 2, description: "trend: one or two lines, each with one value per period.", items: { type: "object", properties: { name: { type: "string" }, values: { type: "array", items: { type: "number" } } }, required: ["name", "values"] } },
+    callout: { type: "string", description: "trend: short note on the direction, like '+38% in two years' (under 30 characters)." },
+    axes: { type: "object", description: "matrix: the two axis names, e.g. x 'Effort', y 'Impact' (low to high).", properties: { x: { type: "string" }, y: { type: "string" } } },
+    quadrants: { type: "array", maxItems: 4, description: "matrix: the four boxes in order top-left, top-right, bottom-left, bottom-right, each with a short title and up to 3 items.", items: { type: "object", properties: { title: { type: "string" }, items: { type: "array", maxItems: 3, items: { type: "string" } } }, required: ["title"] } },
     steps: { type: "array", maxItems: 6, description: "flow or cycle steps.", items: { type: "object", properties: { label: { type: "string", description: "2-4 words" }, note: { type: "string", description: "under 12 words" } }, required: ["label"] } },
     left: { type: "object", description: "compare/scale left side.", properties: { heading: { type: "string" }, points: { type: "array", maxItems: 4, items: { type: "string" } } } },
     right: { type: "object", description: "compare/scale right side.", properties: { heading: { type: "string" }, points: { type: "array", maxItems: 4, items: { type: "string" } } } },
@@ -87,9 +92,15 @@ const ROUND_TOOL = {
       decline: { type: "string", description: "If ok is false: the Chair's friendly one-or-two sentence redirect with a business topic idea." },
       title: { type: "string", description: "Meeting title on the agenda card, under 60 characters (open step only)." },
       chair: { type: "string", description: "Open step only: Mr. Paul, the Chair, opens the meeting in 2 short sentences: frames the question and introduces who is at the table by title." },
-      lines: { type: "array", minItems: 1, maxItems: 4, items: { type: "object", properties: { role: { type: "string", enum: Object.keys(ROLES) }, text: { type: "string" } }, required: ["role", "text"] } },
+      lines: { type: "array", minItems: 1, maxItems: 6, items: { type: "object", properties: {
+        role: { type: "string", enum: Object.keys(ROLES) },
+        text: { type: "string" },
+        note: { type: "string", description: "This speaker's key point as a sticky note for the meeting whiteboard, under 12 words." },
+        screen: Object.assign({}, SCREEN, { description: "OPTIONAL: a NEW diagram that appears as this line is spoken, only when the line brings in a new number or idea worth its own picture (about 1-2 per round)." }),
+        highlight: { type: "object", description: "What on the wall screen this speaker is talking about, so it lights up while they speak.", properties: { side: { type: "string", enum: ["left", "right", "none"], description: "compare/scale: the side they argue for." }, items: { type: "array", maxItems: 3, items: { type: "string" }, description: "Exact labels of bars, steps, periods, points or quadrant titles they mention." } } }
+      }, required: ["role", "text", "note"] } },
       screen: SCREEN,
-      next_prompts: { type: "array", maxItems: 3, items: { type: "string" }, description: "Up to 3 short questions the viewer could ask the room next (under 10 words each)." },
+      next_prompts: { type: "array", maxItems: 6, items: { type: "string" }, description: "6 short, varied questions the viewer could ask next (under 10 words each): mix why, how, what-if, numbers and real-life examples." },
       votes: { type: "array", description: "Only for a vote: each executive's vote.", items: { type: "object", properties: { role: { type: "string", enum: Object.keys(ROLES) }, vote: { type: "string", enum: ["yes", "no", "depends"] }, reason: { type: "string", description: "One sentence." } }, required: ["role", "vote", "reason"] } },
       clarify: CLARIFY,
       doc_notes: DOC_NOTES
@@ -122,7 +133,7 @@ const BRIEF_TOOL = {
       role: { type: "string", enum: Object.keys(ROLES), description: "Who presents (for Ask the Room, pick the seat best suited to answer)." },
       title: { type: "string", description: "Briefing title, under 60 characters." },
       slides: { type: "array", minItems: 1, maxItems: 4, items: { type: "object", properties: { say: { type: "string", description: "What the executive says on this slide." }, screen: SCREEN }, required: ["say", "screen"] } },
-      next_prompts: { type: "array", maxItems: 3, items: { type: "string" }, description: "Up to 3 short follow-up questions (under 10 words each)." },
+      next_prompts: { type: "array", maxItems: 6, items: { type: "string" }, description: "6 short, varied follow-up questions (under 10 words each): mix why, how, what-if, numbers and real-life examples." },
       clarify: CLARIFY,
       doc_notes: DOC_NOTES
     },
@@ -233,6 +244,11 @@ function cleanScreen(s) {
   if (Array.isArray(s.points)) s.points = s.points.slice(0, 5).map(i => ({ icon: clip(i.icon, 4), head: clip(i.head, 50), text: clip(i.text, 140) }));
   if (Array.isArray(s.terms)) s.terms = s.terms.slice(0, 5).map(i => ({ word: clip(i.word, 40), meaning: clip(i.meaning, 260) }));
   s.equation = clip(s.equation, 120);
+  if (Array.isArray(s.periods)) s.periods = s.periods.slice(0, 8).map(x => clip(x, 16));
+  if (Array.isArray(s.series)) s.series = s.series.slice(0, 2).map(x => ({ name: clip(x.name, 30), values: (Array.isArray(x.values) ? x.values : []).slice(0, 8).map(v => Number(v) || 0) }));
+  s.callout = clip(s.callout, 40);
+  if (s.axes) s.axes = { x: clip(s.axes.x, 24), y: clip(s.axes.y, 24) };
+  if (Array.isArray(s.quadrants)) s.quadrants = s.quadrants.slice(0, 4).map(q => ({ title: clip(q.title, 30), items: (Array.isArray(q.items) ? q.items : []).slice(0, 3).map(x => clip(x, 50)) }));
   return s;
 }
 
@@ -249,9 +265,9 @@ AT THE TABLE:
 ${roster}
 ${LEVELS[level]}
 ${GROUND_RULES}
-HOW A ROUND WORKS: each executive at the table speaks ONCE, in a natural order, as a real conversation: they react to each other by title ("I hear the CFO, but..."), each argues from their own seat AND personality, and they genuinely disagree where their seats would. Teach as you talk: every round should leave the viewer understanding one real business idea. Do not repeat earlier points; move the conversation forward. No stage directions, no names other than titles, no bullet points in spoken lines.
+HOW A ROUND WORKS (unless told otherwise below): the table goes around TWICE as a real back-and-forth. With two executives: A, B, A, B (4 lines). With three: A, B, C, A, B, C (6 lines). The order can change between rounds, but nobody speaks twice in a row. Each line reacts to the line before it ("I hear the CFO, but..."), each executive argues from their own seat AND personality, and they genuinely disagree where their seats would. Keep lines short and lively, like people talking, not speeches. Teach as you talk: every round should leave the viewer understanding one real business idea. Do not repeat earlier points; move the conversation forward. No stage directions, no names other than titles, no bullet points in spoken lines.
 If the VIEWER just spoke, the first speaker answers the viewer directly (as "you") and the others build on it. If the viewer addressed a specific executive, that executive answers first.
-The wall screen gets ONE diagram that makes this round's key idea visual.
+THE WALL SCREEN: give the round a base diagram in screen. Then make it come alive: when a line brings in a new number or idea, give that line its own new screen (about 1-2 per round). For every line, fill highlight with what that speaker is pointing at (their side of a compare/scale, or the exact labels of bars, periods, steps or quadrants they mention), and fill note with their key point as a short sticky note.
 ${CLARIFY_RULES}
 ${contextText(b)}${hasDoc(b) ? "\n" + REVIEW_RULES : ""}`;
   if (b.step === "close") {
@@ -268,25 +284,29 @@ ${contextText(b)}${hasDoc(b) ? "\n" + REVIEW_RULES : ""}`;
 First decide ok: is this about business, economics, money or personal finance, and within the ground rules? If not, ok=false with the Chair's friendly redirect.
 If ok: give a title, the Chair's 2-sentence opening, then the first round (one line per executive) and a screen.`;
   else if (b.step === "user") ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nThe VIEWER just said${b.target === "all" ? " (to EVERYONE at the table: each executive answers from their own seat)" : b.target && ROLES[b.target] ? " (to the " + ROLES[b.target].name + ")" : ""}: "${clip(b.userText, 600)}"
-If it answers a clarifying question the board asked, use it and move the discussion forward. If the viewer's message is off the ground rules or unrelated to business, money or economics, the first executive kindly steers back to the topic. Otherwise answer it, then continue the meeting. ok=true.`;
+If it answers a clarifying question the board asked, use it and move the discussion forward. If the viewer's message is off the ground rules or unrelated to business, money or economics, the first executive kindly steers back to the topic. Otherwise answer it (to everyone: each executive answers once; otherwise the right executive answers first), then 1-3 short lines of back-and-forth as the meeting picks back up. ok=true.`;
   else if (b.step === "interrupt") ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nThe VIEWER just INTERRUPTED the ${ROLES[b.interrupted] ? ROLES[b.interrupted].name : lastRole} mid-point and said: "${clip(b.userText, 600)}"
-The interrupted executive responds first, briefly and graciously acknowledging the interruption, and deals with the viewer's point directly. Others may build on it, then the meeting picks back up. ok=true.`;
+The interrupted executive responds first, briefly and graciously acknowledging the interruption, and deals with the viewer's point directly. Then 2-3 more short lines as the others build on it and the meeting picks back up (not a full two-pass round). ok=true.`;
   else if (b.step === "explain") ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nThe viewer tapped EXPLAIN THAT. Only the ${lastRole} speaks (exactly one line, role "${b.lastRole}"): re-explain their last point in plainer words with a quick everyday example. The screen shows that one idea simply. ok=true.`;
   else if (b.step === "pushback") ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nThe viewer tapped PUSH BACK. Another executive at the table (not the ${lastRole}) challenges the ${lastRole}'s last point, respectfully but firmly, from their own seat. Then the ${lastRole} gets one short reply. Exactly 2 lines. The screen shows the two sides (compare or scale). ok=true.`;
   else if (b.step === "vote") ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nThe viewer CALLED A VOTE. In chair, Mr. Paul frames the decision as one clear yes-or-no question in one sentence. Then each executive at the table votes (yes, no or depends) with a one-sentence reason, in votes AND as their spoken line ("I vote yes, because..."). ok=true.`;
-  else ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nContinue the meeting with the next round. Go one level deeper or to the next sub-question the meeting hasn't covered. ok=true.`;
+  else ask = `TOPIC: "${topic}"\nTRANSCRIPT SO FAR:\n${historyText(b.history)}\n\nContinue the meeting with the next round (round ${Math.max(2, parseInt(b.round) || 2)} of about ${Math.max(2, parseInt(b.maxRounds) || 4)}). Go one level deeper or to the next sub-question the meeting hasn't covered.${(parseInt(b.round) || 0) >= (parseInt(b.maxRounds) || 4) ? " This is the LAST round: start bringing the views together toward a conclusion." : ""} ok=true.`;
   const content = docBlocks(b.doc).concat([{ type: "text", text: ask }]);
-  const out = await tryTwice(m => callTool(sys, ROUND_TOOL, content, 3000, j => j.ok === false ? !!j.decline : (Array.isArray(j.lines) && j.lines.length > 0), m));
+  const out = await tryTwice(m => callTool(sys, ROUND_TOOL, content, 5000, j => j.ok === false ? !!j.decline : (Array.isArray(j.lines) && j.lines.length > 0), m));
   if (out.ok === false) return { ok: false, decline: clip(out.decline, 400) };
   const allowed = seats.map(s => s.role);
   out.votes = (Array.isArray(out.votes) ? out.votes : []).filter(v => allowed.includes(v.role)).map(v => ({ role: v.role, vote: ["yes", "no", "depends"].includes(v.vote) ? v.vote : "depends", reason: clip(v.reason, 200) }));
   out.clarify = cleanClarify(out.clarify, allowed);
   out.doc_notes = clip(out.doc_notes, 1500);
-  out.lines = out.lines.filter(l => allowed.includes(l.role)).map(l => ({ role: l.role, text: clip(l.text, 900) })).slice(0, 4);
+  out.lines = out.lines.filter(l => allowed.includes(l.role)).map(l => ({
+    role: l.role, text: clip(l.text, 900), note: clip(l.note, 120),
+    screen: l.screen && l.screen.kind ? cleanScreen(l.screen) : null,
+    highlight: l.highlight ? { side: ["left", "right"].includes(l.highlight.side) ? l.highlight.side : "", items: (Array.isArray(l.highlight.items) ? l.highlight.items : []).map(x => clip(x, 50)).slice(0, 3) } : null
+  })).slice(0, 6);
   if (!out.lines.length) throw new Error("no_lines");
   out.screen = cleanScreen(out.screen);
   out.chair = clip(out.chair, 500); out.title = clip(out.title, 80);
-  out.next_prompts = (out.next_prompts || []).map(p => clip(p, 80)).slice(0, 3);
+  out.next_prompts = (out.next_prompts || []).map(p => clip(p, 80)).slice(0, 6);
   return out;
 }
 
@@ -317,7 +337,7 @@ SLIDES: ${b.followup ? "1-2 slides answering the follow-up" : isAsk ? "2-3 slide
   out.role = role || (ROLES[out.role] && ROLES[out.role].table === table ? out.role : seatList[0][0]);
   out.slides = out.slides.slice(0, 4).map(s => ({ say: clip(s.say, 1000), screen: cleanScreen(s.screen) }));
   out.title = clip(out.title, 80);
-  out.next_prompts = (out.next_prompts || []).map(p => clip(p, 80)).slice(0, 3);
+  out.next_prompts = (out.next_prompts || []).map(p => clip(p, 80)).slice(0, 6);
   out.clarify = cleanClarify(out.clarify, [out.role]);
   out.doc_notes = clip(out.doc_notes, 1500);
   return out;
