@@ -127,7 +127,7 @@ h1,h2,h3{margin:0}
 .tables{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .tcard{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:16px;padding:14px;color:var(--ink)}
 .tcard.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,196,120,.18)}
-.tcard .faces3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.tcard .scene{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;display:block;margin-bottom:10px}
 .tcard .faces3 img{width:100%;aspect-ratio:1;object-fit:cover;object-position:center 20%;border-radius:10px;display:block}
 .tcard h3{font-family:'Playfair Display',Georgia,serif;font-size:20px}
 .tcard p{margin:4px 0 0;color:var(--muted);font-size:14px}
@@ -146,7 +146,7 @@ h1,h2,h3{margin:0}
 .seat.on{border-color:var(--gold)}
 .seat .pick{all:unset;cursor:pointer;display:block}
 .seat .ph{position:relative;border-radius:10px;overflow:hidden}
-.seat img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:center 25%;display:block}
+.seat img{width:100%;aspect-ratio:16/8;object-fit:cover;object-position:center 22%;display:block}
 .seat .chk{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(10,17,32,.75);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;color:#1a1405}
 .seat.on .chk{background:var(--gold);border-color:var(--gold)}
 .seat .nm{font-weight:800;font-size:16px;margin:8px 0 2px}
@@ -366,12 +366,12 @@ h1,h2,h3{margin:0}
       <p class="sub">Each table has three seats. Pick a table, then a room.</p>
       <div class="tables">
         <button class="tcard" id="tCorp" type="button">
-          <div class="faces3"><img src="board1.png" alt="CEO"><img src="board4.png" alt="CFO"><img src="board5.png" alt="COO"></div>
+          <img class="scene" src="board13.png" alt="Executives meeting in a corporate boardroom">
           <h3>🏢 Corporate Table</h3>
           <p>CEO · CFO · COO. How companies set strategy, manage money and run the operation.</p>
         </button>
         <button class="tcard" id="tMain" type="button">
-          <div class="faces3"><img src="board8.png" alt="Growth Advisor"><img src="board9.png" alt="Exit Planner"><img src="board11.png" alt="Personal Financial Advisor"></div>
+          <img class="scene" src="board14.png" alt="Small business owners meeting at a neighborhood bakery-café">
           <h3>🏪 Main Street Table</h3>
           <p>Growth Advisor · Exit Planner · Personal Financial Advisor. Small business and your own money.</p>
         </button>
@@ -392,8 +392,27 @@ h1,h2,h3{margin:0}
       <h2><b>3</b><span id="s3title">Set up the room</span></h2>
       <p class="sub" id="s3sub"></p>
 
+      <!-- topics (briefing / meeting) -->
+      <div id="topicWrap">
+        <div class="boxlab" style="font-weight:700;color:var(--ink)">✏️ Your own question or topic, like "Should we raise prices this year?"</div>
+        <div class="own"><input id="ownTopic" maxlength="300" autocomplete="off" aria-label="Your own question or topic"><button class="mic" id="micTopic" type="button" title="Talk">🎤</button><button class="go" id="startBtn" type="button">Start ▶</button></div>
+        <span class="status" id="s3"></span>
+        <div class="boxlab" style="font-weight:700;color:var(--ink);margin-top:8px">💡 Or tap a topic, then a question to start right away</div>
+        <div class="cats" id="cats"></div>
+        <div class="qs" id="qs"></div>
+      </div>
+
+      <!-- ask the room -->
+      <div id="askWrap" class="hide">
+        <div class="boxlab">✋ Ask the room anything about business or money, like "Why do profitable companies run out of cash?"</div>
+        <div class="own"><input id="askIn" maxlength="600" autocomplete="off" aria-label="Your question for the room"><button class="mic" id="micAsk" type="button" title="Talk">🎤</button><button class="go" id="askGo" type="button">Ask ▶</button></div>
+        <div class="qs" id="askIdeas" style="margin-top:10px"></div>
+        <span class="status" id="sAsk"></span>
+      </div>
+
       <!-- seats (briefing / meeting / ask) -->
       <div id="seatWrap">
+        <div class="boxlab" style="font-weight:700;color:var(--ink);margin-top:16px" id="seatLab">Who's at the table <small style="color:var(--muted);font-weight:500">(optional) Voices and personalities</small></div>
         <div class="seats" id="seats"></div>
       </div>
 
@@ -425,27 +444,6 @@ h1,h2,h3{margin:0}
           </div>
         </div>
       </details>
-
-      <!-- topics (briefing / meeting) -->
-      <div id="topicWrap">
-        <div class="boxlab" style="font-weight:700;color:var(--ink)">Pick a topic</div>
-        <div class="cats" id="cats"></div>
-        <div class="qs" id="qs"></div>
-        <div class="boxlab">✏️ Or choose your own topic, like "Should we raise prices this year?"</div>
-        <div class="own"><input id="ownTopic" maxlength="300" autocomplete="off" aria-label="Your own topic"><button class="mic" id="micTopic" type="button" title="Talk">🎤</button></div>
-        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="go big" id="startBtn" type="button">Start the meeting ▶</button>
-          <span class="status" id="s3"></span>
-        </div>
-      </div>
-
-      <!-- ask the room -->
-      <div id="askWrap" class="hide">
-        <div class="boxlab">✋ Ask the room anything about business or money, like "Why do profitable companies run out of cash?"</div>
-        <div class="own"><input id="askIn" maxlength="600" autocomplete="off" aria-label="Your question for the room"><button class="mic" id="micAsk" type="button" title="Talk">🎤</button><button class="go" id="askGo" type="button">Ask ▶</button></div>
-        <div class="qs" id="askIdeas" style="margin-top:10px"></div>
-        <span class="status" id="sAsk"></span>
-      </div>
 
       <!-- glossary -->
       <div id="glossWrap" class="hide">
@@ -713,8 +711,8 @@ function paintStep3(){
   $("askWrap").classList.toggle("hide", r !== "ask");
   $("glossWrap").classList.toggle("hide", r !== "glossary");
   const tname = t === "corporate" ? "Corporate Table" : "Main Street Table";
-  if (r === "briefing") { $("s3title").textContent = "Pick your presenter and topic"; $("s3sub").textContent = `${tname}: tap one executive to present. Choose a voice (man or woman) and a personality.`; $("startBtn").textContent = "Start the briefing ▶"; }
-  if (r === "meeting") { $("s3title").textContent = "Seat the meeting and pick a topic"; $("s3sub").textContent = `${tname}: seat two or all three executives. Choose each one's voice and personality.`; $("startBtn").textContent = "Start the meeting ▶"; }
+  if (r === "briefing") { $("s3title").textContent = "Pick your presenter and topic"; $("s3sub").textContent = `${tname}: tap one executive to present. Choose a voice (man or woman) and a personality.`; $("startBtn").textContent = "Start ▶"; }
+  if (r === "meeting") { $("s3title").textContent = "Seat the meeting and pick a topic"; $("s3sub").textContent = `${tname}: seat two or all three executives. Choose each one's voice and personality.`; $("startBtn").textContent = "Start ▶"; }
   if (r === "ask") { $("s3title").textContent = "Ask the Room"; $("s3sub").textContent = `${tname}: the right executive takes your question. Set each voice and personality first if you like.`; }
   if (r === "glossary") { $("s3title").textContent = "The Executive Glossary"; $("s3sub").textContent = "Search or browse by topic. Tap “Bring it to the Boardroom” and an executive explains it with diagrams."; }
   $("briefBox").classList.toggle("hide", r === "glossary");
