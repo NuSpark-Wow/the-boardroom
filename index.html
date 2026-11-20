@@ -282,6 +282,40 @@ h1,h2,h3{margin:0}
 .pt .i{font-size:22px}.pt b{display:block;font-size:15px;margin:2px 0}.pt span{font-size:13.5px;color:#cbd5e3}
 @media(max-width:560px){.cmp{grid-template-columns:1fr}}
 
+/* wall tabs, notes, live highlights */
+.tabs{display:flex;gap:6px}
+.tabs button{background:rgba(0,0,0,.3);border:1px solid #6b4a2b;color:#f2e3cc;font-weight:800;font-size:14px;padding:6px 12px;border-radius:10px}
+.tabs button.on{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.tabs button b{background:#b3263a;color:#fff;border-radius:10px;padding:0 6px;margin-left:4px;font-size:12px}
+.tabs button b:empty{display:none}
+.notesBoard{background:var(--wall);border:6px solid #111827;border-radius:10px;min-height:300px;padding:14px;max-height:520px;overflow:auto}
+.stickies{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sticky{background:color-mix(in srgb,var(--c) 22%,#111b30);border-top:5px solid var(--c);border-radius:8px;padding:8px 10px;font-size:13.5px;line-height:1.4;box-shadow:0 3px 8px rgba(0,0,0,.35);transform:rotate(-.6deg)}
+.sticky:nth-child(even){transform:rotate(.7deg)}
+.sticky b{display:block;color:var(--c);font-size:12px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.nowtag{position:absolute;right:12px;bottom:10px;font-size:12.5px;font-weight:800;color:#1a1405;background:var(--c);padding:3px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.spktag{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:800;color:#1a1405;background:var(--c);padding:2px 8px;border-radius:10px}
+.cmp .col{transition:opacity .25s,box-shadow .25s,transform .25s}
+.cmp .col.speak{box-shadow:0 0 0 3px var(--c),0 0 18px color-mix(in srgb,var(--c) 45%,transparent);transform:translateY(-2px)}
+.cmp .col.dim{opacity:.45}
+.pt,.qd,.exrow{transition:box-shadow .25s,transform .25s}
+.pt.lit,.qd.lit{box-shadow:0 0 0 3px var(--c),0 0 18px color-mix(in srgb,var(--c) 45%,transparent);transform:translateY(-2px)}
+.exrow.lit{border-color:var(--gold);background:#2a2412}
+.matrix{display:grid;grid-template-columns:22px 1fr;grid-template-rows:1fr auto;gap:6px}
+.matrix .ylab{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-size:12.5px;font-weight:800;color:var(--gold)}
+.matrix .xlab{grid-column:2;text-align:center;font-size:12.5px;font-weight:800;color:var(--gold)}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qd{background:#111b30;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-height:96px}
+.qd.q1{background:#16302c}.qd.q2{background:#2a2412}
+.qd b{font-size:14px}.qd ul{margin:4px 0 0;padding-left:16px}.qd li{font-size:13px;margin:2px 0}.qd li.hi{color:#fff;font-weight:800}
+.defpanel{background:var(--panel2);border:1px solid var(--gold2);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+.defpanel .dh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
+.defpanel .dh button{background:none;border:0;color:var(--muted);font-size:18px}
+.defpanel .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.defcard{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:6px}
+.defcard h4{margin:0 0 4px;color:var(--gold)}
+.defcard p{margin:4px 0;font-size:14.5px}
+.defcard .f{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0a1120;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px;margin:6px 0}
 /* Brief the Board */
 .brief{background:var(--panel2);border:1px solid var(--line);border-radius:14px;margin:4px 0 14px}
 .brief>summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -397,6 +431,7 @@ h1,h2,h3{margin:0}
         <div class="boxlab" style="font-weight:700;color:var(--ink)">✏️ Your own question or topic, like "Should we raise prices this year?"</div>
         <div class="own"><input id="ownTopic" maxlength="300" autocomplete="off" aria-label="Your own question or topic"><button class="mic" id="micTopic" type="button" title="Talk">🎤</button><button class="go" id="startBtn" type="button">Start ▶</button></div>
         <span class="status" id="s3"></span>
+        <div class="mini hide" id="lenWrap" style="margin:2px 0 6px"><span class="lab">Meeting length</span><button class="chip" data-len="standard" type="button">⏱ Standard · about 4 rounds</button><button class="chip" data-len="double" type="button">⏱⏱ Double · about 8 rounds</button></div>
         <div class="boxlab" style="font-weight:700;color:var(--ink);margin-top:8px">💡 Or tap a topic, then a question to start right away</div>
         <div class="cats" id="cats"></div>
         <div class="qs" id="qs"></div>
@@ -482,10 +517,11 @@ h1,h2,h3{margin:0}
       </div>
 
       <div class="wallbox">
-        <div class="wallhead"><h3>📺 The wall screen</h3><div class="pager"><button id="pPrev" type="button" aria-label="Previous diagram" disabled>‹</button><span id="pNum"></span><button id="pNext" type="button" aria-label="Next diagram" disabled>›</button></div></div>
+        <div class="wallhead"><div class="tabs"><button id="tabChart" class="on" type="button">📺 Wall screen</button><button id="tabNotes" type="button">📝 Meeting notes<b id="noteCount"></b></button></div><div class="pager"><button id="pPrev" type="button" aria-label="Previous diagram" disabled>‹</button><span id="pNum"></span><button id="pNext" type="button" aria-label="Next diagram" disabled>›</button></div></div>
         <div class="screen" id="screen">
           <div class="empty">📊 Diagrams will appear here.</div>
         </div>
+        <div class="notesBoard hide" id="notesBoard"></div>
         <div class="under">
           <button class="cbtn" id="pauseBtn" type="button" disabled>⏸ Pause Audio</button>
           <button class="cbtn" id="contBtn" type="button" disabled>▶ Continue Audio</button>
@@ -498,6 +534,7 @@ h1,h2,h3{margin:0}
 
     <div class="jump" id="jump">
       <div class="moves" id="moves"></div>
+      <div class="defpanel hide" id="defPanel"></div>
       <div class="clar hide" id="clar"></div>
       <div class="lab" id="jLab">Your turn</div>
       <div class="hint" id="jHint">Ask a question or make a point. Type, or tap 🎤 and talk.</div>
@@ -676,6 +713,9 @@ const S = {
 function savePref(){ store.set("br_pref", JSON.stringify(S.pref)); }
 
 // ===================== SETUP UI =====================
+S.len = store.get("br_len", "standard");
+function paintLen(){ document.querySelectorAll("#lenWrap .chip").forEach(b => b.classList.toggle("on", b.dataset.len === S.len)); }
+document.querySelectorAll("#lenWrap .chip").forEach(b => b.onclick = () => { S.len = b.dataset.len; store.set("br_len", S.len); paintLen(); });
 function setLevel(l){
   S.level = l === "starter" ? "starter" : "executive"; store.set("br_level", S.level);
   $("lvStarter").classList.toggle("on", S.level === "starter"); $("lvExec").classList.toggle("on", S.level !== "starter");
@@ -717,6 +757,7 @@ function paintStep3(){
   if (r === "glossary") { $("s3title").textContent = "The Executive Glossary"; $("s3sub").textContent = "Search or browse by topic. Tap “Bring it to the Boardroom” and an executive explains it with diagrams."; }
   $("briefBox").classList.toggle("hide", r === "glossary");
   if (r !== "glossary") { paintSeats(); paintBrief(); }
+  $("lenWrap").classList.toggle("hide", r !== "meeting"); paintLen();
   if (r === "briefing" || r === "meeting") paintTopics();
   if (r === "ask") $("askIdeas").innerHTML = ASK_IDEAS[t].map(q => `<button class="qchip" type="button">${esc(q)}</button>`).join("");
   if (r === "ask") $("askIdeas").querySelectorAll(".qchip").forEach(b => b.onclick = () => { $("askIn").value = b.textContent; });
@@ -1005,7 +1046,7 @@ async function begin(topic, category, opt){
   S.returnRoom = room;
   S.token++; stopVoice();
   const review = !!opt.review;
-  Object.assign(S, { mode: room === "glossary" ? "briefing" : room, topic, category, history:[], rounds:0, screens:[], sIdx:0, started:false, presenter:null, title: opt.title || "", docNotes:"", clarify:null, lastRole:null, votes:[], takeaway:null, review, docName: review && S.doc ? S.doc.name : "" });
+  Object.assign(S, { mode: room === "glossary" ? "briefing" : room, topic, category, history:[], rounds:0, screens:[], sIdx:0, started:false, presenter:null, title: opt.title || "", docNotes:"", clarify:null, lastRole:null, votes:[], takeaway:null, review, notes:[], hl:null, meetPaused:false, closed:false, pre:null, maxRounds: S.len === "double" ? 8 : 4, docName: review && S.doc ? S.doc.name : "" });
   const statusEl = review ? $("sRv") : room === "ask" ? $("sAsk") : room === "glossary" ? $("sGloss") : $("s3");
   statusEl.className = "status"; statusEl.textContent = "⏳ Getting the room ready…";
   showRoom();
@@ -1024,10 +1065,10 @@ async function begin(topic, category, opt){
       paintAgenda(kindLabel, S.title, topic);
       const beats = [];
       if (j.chair) beats.push({ who:"chair", text:j.chair, screen:j.screen });
-      j.lines.forEach((l, i) => beats.push({ who:l.role, text:l.text, screen: (!j.chair && i === 0) ? j.screen : null }));
+      j.lines.forEach((l, i) => beats.push(lineBeat(l, (!j.chair && i === 0) ? j.screen : null)));
       S.rounds = 1;
       statusEl.textContent = "";
-      await playBatch(beats, j.next_prompts, j.clarify);
+      await playBatch(beats, j.next_prompts, j.clarify, { prefetch:true, after:autoNext });
     } catch(e){ backToSetup(statusEl, errText(e), true); }
     return;
   }
@@ -1063,7 +1104,7 @@ function showRoom(){
   $("adjourn").classList.add("hide"); $("logBody").innerHTML = ""; $("prompts").innerHTML = "";
   $("caption").innerHTML = `<span class="ph">The conversation will appear here.</span>`;
   $("screen").innerHTML = `<div class="empty">📊 Diagrams will appear here.</div>`; $("defs").classList.add("hide"); $("pNum").textContent = "";
-  $("jump").classList.remove("hide"); jumpMode = "question"; jumpTarget = ""; lastPrompts = []; setJump(false, [], null);
+  $("jump").classList.remove("hide"); jumpMode = "question"; jumpTarget = ""; lastPrompts = []; defOpen = false; defShown = ""; wallTab = "chart"; $("defPanel").classList.add("hide"); $("notesBoard").classList.add("hide"); $("screen").classList.remove("hide"); $("noteCount").textContent = ""; setJump(false, [], null);
   const bt = briefText();
   $("briefCard").classList.toggle("hide", !bt && !S.docName);
   $("briefCard").innerHTML = (bt ? `📋 Using your company brief` : "") + (S.docName ? `${bt ? " · " : ""}📎 Reviewing: ${esc(S.docName)}` : "");
@@ -1147,7 +1188,7 @@ function stopVoice(){
 }
 function paintCtrls(){
   $("pauseBtn").disabled = !speaking || paused;
-  $("contBtn").disabled = !speaking || !paused;
+  $("contBtn").disabled = !(speaking && paused) && !(S.mode === "meeting" && S.meetPaused && !S.closed);
   $("replayBtn").disabled = !lastBeat || S.busy || speaking;
 }
 function wordsFromAlignment(al, text){
@@ -1240,14 +1281,17 @@ function tapToPlay(){
     L.querySelector("button").onclick = () => { L.classList.remove("on"); voiceEl.play().then(r).catch(r); };
   });
 }
-$("pauseBtn").onclick = () => { if (!speaking) return; paused = true; if (useTimer) {} else if (useTTS) speechSynthesis.pause(); else voiceEl.pause(); $("people").querySelectorAll(".person").forEach(p => p.classList.remove("talking")); paintCtrls(); };
-$("contBtn").onclick = () => { if (jumpMode === "interrupt") { jumpMode = "question"; S.interrupted = null; setJump(false); } if (!speaking) return; paused = false; if (useTimer) {} else if (useTTS) speechSynthesis.resume(); else voiceEl.play().catch(() => {}); const live = $("people").querySelector(".person.live"); if (live) live.classList.add("talking"); paintCtrls(); };
+$("pauseBtn").onclick = () => { if (S.mode === "meeting") { S.meetPaused = true; setTimeout(() => setJump(!S.busy), 0); } if (!speaking) return; paused = true; if (useTimer) {} else if (useTTS) speechSynthesis.pause(); else voiceEl.pause(); $("people").querySelectorAll(".person").forEach(p => p.classList.remove("talking")); paintCtrls(); };
+$("contBtn").onclick = () => { if (jumpMode === "interrupt") { jumpMode = "question"; S.interrupted = null; setJump(false); } if (S.mode === "meeting") { S.meetPaused = false; setTimeout(() => setJump(!S.busy), 0); if (!speaking && !S.busy) { autoNext(null); return; } } if (!speaking) return; paused = false; if (useTimer) {} else if (useTTS) speechSynthesis.resume(); else voiceEl.play().catch(() => {}); const live = $("people").querySelector(".person.live"); if (live) live.classList.add("talking"); paintCtrls(); };
 $("replayBtn").onclick = () => { if (!lastBeat || S.busy || speaking) return; const b = lastBeat; if (b.screen) showScreenObj(b.screen); sayBeat(b, getVoice(b.text, b.who)).then(() => { setLive(null); paintCtrls(); }); };
 
 // ===================== PLAYBACK OF A BATCH =====================
-async function playBatch(beats, prompts, clarify){
+async function playBatch(beats, prompts, clarify, opt){
+  opt = opt || {};
   const my = ++S.token;
-  S.busy = true; S.clarify = null; setJump(false, null, null); think(false);
+  S.busy = true; S.clarify = null;
+  if (prompts && prompts.length) lastPrompts = prompts;
+  setJump(false, null, null); think(false);
   beats = beats.filter(b => b && b.text);
   // Screens go on the wall as they come up
   const firstScreen = beats.find(b => b.screen);
@@ -1261,24 +1305,36 @@ async function playBatch(beats, prompts, clarify){
     });
     S.started = true;
   }
+  const preAt = Math.max(0, beats.length - 3);
+  S.batchStart = S.history.length;
   let next = beats.length ? getVoice(beats[0].text, beats[0].who) : null;
   for (let i = 0; i < beats.length; i++) {
     if (my !== S.token) return;
     const b = beats[i];
     const cur = next;
     next = i + 1 < beats.length ? getVoice(beats[i + 1].text, beats[i + 1].who) : null;
+    // The next round starts loading near the end of this one, so the meeting flows without a gap
+    if (opt.prefetch && i === preAt) startPrefetch(beats);
     if (b.screen) showScreenObj(b.screen);
+    S.hl = { who:b.who, side:(b.highlight && b.highlight.side) || "", items:(b.highlight && b.highlight.items) || [] };
+    paintScreen();
+    if (b.note) addNote(b.who, b.note);
     S.history.push({ who:b.who, text:b.text });
     if (b.who !== "chair" && b.who !== "user") S.lastRole = b.who;
     logRow(b.who, b.text);
+    if (defOpen) paintDefine();
     setTimeout(() => { if (S.busy) setJump(false); }, 60);
     await sayBeat(b, cur);
     if (my !== S.token) return;
-    if (i + 1 < beats.length) await sleep(350);
+    while (S.meetPaused && my === S.token) await sleep(250);   // Pause Meeting holds between lines
+    if (my !== S.token) return;
+    if (i + 1 < beats.length) await sleep(300);
   }
   if (my !== S.token) return;
+  S.hl = null; paintScreen();
   S.busy = false; setLive(null); paintCtrls();
   setJump(true, prompts || [], clarify || null);
+  if (opt.after) opt.after(clarify);
 }
 
 // ===================== THE WALL SCREEN =====================
@@ -1288,19 +1344,29 @@ function showScreenObj(sc){
   S.sIdx = S.screens.indexOf(sc);
   paintScreen();
 }
+let wallTab = "chart";
 function paintScreen(){
+  $("tabChart").classList.toggle("on", wallTab === "chart"); $("tabNotes").classList.toggle("on", wallTab === "notes");
+  $("noteCount").textContent = S.notes && S.notes.length ? S.notes.length : "";
+  $("screen").classList.toggle("hide", wallTab !== "chart"); $("notesBoard").classList.toggle("hide", wallTab !== "notes");
+  if (wallTab === "notes") { paintNotes(); }
   const sc = S.screens[S.sIdx];
   $("pPrev").disabled = S.sIdx <= 0; $("pNext").disabled = S.sIdx >= S.screens.length - 1;
   $("pNum").textContent = S.screens.length ? `${S.sIdx + 1} / ${S.screens.length}` : "";
   if (!sc) return;
+  const live = S.hl && S.sIdx === S.screens.length - 1 ? S.hl : null;
   let body = "";
-  try { body = renderDiagram(sc); } catch(e) { body = `<div class="empty">📊 ${esc(sc.caption || "")}</div>`; }
+  try { body = renderDiagram(sc, live); } catch(e) { body = `<div class="empty">📊 ${esc(sc.caption || "")}</div>`; }
+  const who = live && live.who ? (live.who === "chair" ? "Mr. Paul" : ROLES[live.who] ? ROLES[live.who].name : "") : "";
   $("screen").innerHTML = (sc.example_numbers !== false && hasNumbers(sc) ? `<div class="exnote">Example numbers</div>` : "") +
-    `<div class="stitle">${esc(sc.title || "")}</div><div class="scap">${esc(sc.caption || "")}</div>` + body;
+    `<div class="stitle">${esc(sc.title || "")}</div><div class="scap">${esc(sc.caption || "")}</div>` + body +
+    (who ? `<div class="nowtag" style="--c:${roleColor(live.who)}">🎙 Now speaking: ${esc(who)}</div>` : "");
   paintDefs();
 }
 $("pPrev").onclick = () => { if (S.sIdx > 0) { S.sIdx--; paintScreen(); } };
 $("pNext").onclick = () => { if (S.sIdx < S.screens.length - 1) { S.sIdx++; paintScreen(); } };
+$("tabChart").onclick = () => { wallTab = "chart"; paintScreen(); };
+$("tabNotes").onclick = () => { wallTab = "notes"; paintScreen(); };
 let defsOpen = false;
 $("defBtn").onclick = () => { defsOpen = !defsOpen; paintDefs(); };
 function paintDefs(){
@@ -1309,9 +1375,20 @@ function paintDefs(){
   if (!defsOpen) return;
   const sc = S.screens[S.sIdx];
   const terms = (sc && sc.terms) || [];
-  $("defs").innerHTML = terms.length ? `<dl>${terms.map(t => `<dt>${esc(t.word)}</dt><dd>${esc(t.meaning)}</dd>`).join("")}</dl>` : `<div class="note">No extra terms on this screen. Try the Executive Glossary for more.</div>`;
+  $("defs").innerHTML = terms.length ? `<dl>${terms.map(t => `<dt>${esc(t.word)}</dt><dd>${esc(t.meaning)}</dd>`).join("")}</dl>` : `<div class="note">No extra terms on this screen. Tap 📖 Define That for any word from the meeting.</div>`;
 }
-function hasNumbers(sc){ return (sc.kind === "bars" || sc.kind === "waterfall") ? true : sc.kind === "formula" ? (sc.example || []).length > 0 : false; }
+function hasNumbers(sc){ return ["bars", "waterfall", "trend"].includes(sc.kind) ? true : sc.kind === "formula" ? (sc.example || []).length > 0 : false; }
+
+// ----- Meeting Notes: each executive's key points as sticky notes -----
+const COLORS = { chair:"#e8c478", ceo:"#7fa8e8", cfo:"#5fc4b8", coo:"#ef8a74", growth:"#8fd18f", exit:"#b9a3ef", pfa:"#f2a65a", user:"#e8e8e8" };
+const roleColor = w => COLORS[w] || "#e8c478";
+function addNote(who, text){ S.notes.push({ who, text }); if (wallTab !== "notes") $("noteCount").textContent = S.notes.length; else paintNotes(); }
+function paintNotes(){
+  const N = S.notes || [];
+  $("notesBoard").innerHTML = N.length
+    ? `<div class="stickies">${N.map(n => `<div class="sticky" style="--c:${roleColor(n.who)}"><b>${esc(nameOf(n.who))}</b>${esc(n.text)}</div>`).join("")}</div>`
+    : `<div class="empty">📝 Each executive's key points stick here as the meeting goes.</div>`;
+}
 
 function fmt(v, unit){
   const u = String(unit || "").trim();
@@ -1332,29 +1409,49 @@ function wrap(t, max, lines){
   return out;
 }
 const TX = (x, y, lines, o) => `<text x="${x}" y="${y}" text-anchor="${o.a || "middle"}" font-size="${o.s || 13}" font-weight="${o.w || 600}" fill="${o.c || "#eef2f8"}" font-family="Inter,system-ui,sans-serif">${lines.map((l, i) => `<tspan x="${x}" dy="${i ? (o.lh || (o.s || 13) + 3) : 0}">${esc(l)}</tspan>`).join("")}</text>`;
+// Does a label match what the speaker is talking about?
+const nrm = t => String(t || "").toLowerCase().replace(/[^a-z0-9%$]+/g, " ").trim();
+function hitter(hl){
+  const L = ((hl && hl.items) || []).map(nrm).filter(x => x.length > 1);
+  return lab => { const n = nrm(lab); return !!n && L.some(x => n === x || (x.length > 3 && n.includes(x)) || (n.length > 3 && x.includes(n))); };
+}
 
-function renderDiagram(sc){
-  const k = sc.kind;
-  if (k === "bars") return svgBars(sc);
-  if (k === "waterfall") return svgWaterfall(sc);
-  if (k === "flow") return svgFlow(sc);
-  if (k === "cycle") return svgCycle(sc);
-  if (k === "scale") return svgScale(sc) + cmpHTML(sc, true);
-  if (k === "compare") return cmpHTML(sc, false);
-  if (k === "formula") return `<div class="eq">${esc(sc.equation || sc.title)}</div><div class="exrows">${(sc.example || []).map(r => `<div class="exrow"><span>${esc(r.label)}</span><b>${esc(r.value)}</b></div>`).join("")}</div>`;
-  return ptsHTML(sc);
+function renderDiagram(sc, hl){
+  const k = sc.kind, hit = hitter(hl);
+  const any = labels => labels.some(hit);
+  if (k === "bars") return svgBars(sc, hit, any((sc.items || []).map(i => i.label)), hl);
+  if (k === "waterfall") return svgWaterfall(sc, hit, any((sc.items || []).map(i => i.label)), hl);
+  if (k === "trend") return svgTrend(sc, hit, hl);
+  if (k === "matrix") return matrixHTML(sc, hit, hl);
+  if (k === "flow") return svgFlow(sc, hit, hl);
+  if (k === "cycle") return svgCycle(sc, hit, hl);
+  if (k === "scale") return svgScale(sc, hl) + cmpHTML(sc, true, hl);
+  if (k === "compare") return cmpHTML(sc, false, hl);
+  if (k === "formula") return `<div class="eq">${esc(sc.equation || sc.title)}</div><div class="exrows">${(sc.example || []).map(r => `<div class="exrow ${hit(r.label) ? "lit" : ""}"><span>${esc(r.label)}</span><b>${esc(r.value)}</b></div>`).join("")}</div>`;
+  return ptsHTML(sc, hit, hl);
 }
-function ptsHTML(sc){
+function whoTag(hl){ return hl && hl.who && hl.who !== "user" ? `<span class="spktag" style="--c:${roleColor(hl.who)}">${esc(hl.who === "chair" ? "Mr. Paul" : ROLES[hl.who] ? ROLES[hl.who].name : "")}</span>` : ""; }
+function ptsHTML(sc, hit, hl){
+  hit = hit || (() => false);
   const pts = sc.points && sc.points.length ? sc.points : (sc.steps || []).map(s => ({ icon:"•", head:s.label, text:s.note }));
-  return `<div class="pts">${pts.map(p => `<div class="pt"><div class="i">${esc(p.icon || "💡")}</div><b>${esc(p.head)}</b><span>${esc(p.text || "")}</span></div>`).join("")}</div>`;
+  return `<div class="pts">${pts.map(p => { const on = hit(p.head); return `<div class="pt ${on ? "lit" : ""}" style="--c:${hl ? roleColor(hl.who) : "#e8c478"}"><div class="i">${esc(p.icon || "💡")}</div><b>${esc(p.head)}</b><span>${esc(p.text || "")}</span>${on ? whoTag(hl) : ""}</div>`; }).join("")}</div>`;
 }
-function cmpHTML(sc, scale){
+function cmpHTML(sc, scale, hl){
   const L = sc.left || { heading:"Option A", points:[] }, R = sc.right || { heading:"Option B", points:[] };
   const wl = scale && sc.lean === "left", wr = scale && sc.lean === "right";
-  return `<div class="cmp"><div class="col L ${wl ? "win" : ""}"><h5>${esc(L.heading)}${wl ? " ✓" : ""}</h5><ul>${(L.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>
-    <div class="col R ${wr ? "win" : ""}"><h5>${esc(R.heading)}${wr ? " ✓" : ""}</h5><ul>${(R.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div></div>`;
+  const sl = hl && hl.side === "left", sr = hl && hl.side === "right";
+  const c = hl ? roleColor(hl.who) : "#e8c478";
+  return `<div class="cmp"><div class="col L ${wl ? "win" : ""} ${sl ? "speak" : ""} ${hl && hl.side && !sl ? "dim" : ""}" style="--c:${c}"><h5>${esc(L.heading)}${wl ? " ✓" : ""}</h5><ul>${(L.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul>${sl ? whoTag(hl) : ""}</div>
+    <div class="col R ${wr ? "win" : ""} ${sr ? "speak" : ""} ${hl && hl.side && !sr ? "dim" : ""}" style="--c:${c}"><h5>${esc(R.heading)}${wr ? " ✓" : ""}</h5><ul>${(R.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul>${sr ? whoTag(hl) : ""}</div></div>`;
 }
-function svgBars(sc){
+function matrixHTML(sc, hit, hl){
+  const Q = (sc.quadrants || []).slice(0, 4);
+  while (Q.length < 4) Q.push({ title:"", items:[] });
+  const ax = sc.axes || { x:"", y:"" }, c = hl ? roleColor(hl.who) : "#e8c478";
+  const cell = (q, i) => { q = Object.assign({}, q, { title: q.title || q.label || "" }); const on = hit(q.title) || (q.items || []).some(hit); return `<div class="qd q${i} ${on ? "lit" : ""}" style="--c:${c}"><b>${esc(q.title)}</b><ul>${(q.items || []).map(x => `<li class="${hit(x) ? "hi" : ""}">${esc(x)}</li>`).join("")}</ul>${on ? whoTag(hl) : ""}</div>`; };
+  return `<div class="matrix"><div class="ylab">${esc(ax.y || "")} ↑</div><div class="grid4">${Q.map(cell).join("")}</div><div class="xlab">${esc(ax.x || "")} →</div></div>`;
+}
+function svgBars(sc, hit, anyHit, hl){
   const items = (sc.items || []).filter(i => isFinite(i.value)).slice(0, 7);
   if (!items.length) return ptsHTML(sc);
   const W = 640, H = 300, top = 30, base = 240, left = 30, right = 610;
@@ -1364,18 +1461,18 @@ function svgBars(sc){
   let g = `<line x1="${left}" y1="${base}" x2="${right}" y2="${base}" stroke="#3a4c70" stroke-width="2"/>`;
   items.forEach((it, i) => {
     const h = Math.max(2, Math.abs(it.value) / max * (base - top - 24));
-    const x = left + slot * i + (slot - bw) / 2, y = base - h;
-    g += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="6" fill="${cols[i % cols.length]}"/>`;
+    const x = left + slot * i + (slot - bw) / 2, y = base - h, on = hit(it.label);
+    g += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="6" fill="${cols[i % cols.length]}" opacity="${anyHit && !on ? 0.35 : 1}" ${on ? `stroke="#fff" stroke-width="3"` : ""}/>`;
+    if (on) g += `<text x="${x + bw / 2}" y="${y - 26}" text-anchor="middle" font-size="18">👉</text>`;
     g += TX(x + bw / 2, y - 8, [fmt(it.value, sc.unit)], { s:14, w:800 });
-    g += TX(x + bw / 2, base + 18, wrap(it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12.5, c:"#c9d4e5" });
+    g += TX(x + bw / 2, base + 18, wrap(it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12.5, c:on ? "#fff" : "#c9d4e5", w:on ? 800 : 600 });
   });
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
 }
-function svgWaterfall(sc){
+function svgWaterfall(sc, hit, anyHit, hl){
   const items = (sc.items || []).filter(i => isFinite(i.value)).slice(0, 7);
   if (!items.length) return ptsHTML(sc);
   const W = 640, H = 300, top = 34, base = 236, left = 24, right = 616;
-  // Running totals: totals reset the level; deltas move it up or down
   let run = 0; const bars = [];
   items.forEach((it, i) => {
     const isTotal = it.kind === "total" || i === 0;
@@ -1387,43 +1484,73 @@ function svgWaterfall(sc){
   const slot = (right - left) / bars.length, bw = Math.min(64, slot * 0.62);
   let g = `<line x1="${left}" y1="${yv(0)}" x2="${right}" y2="${yv(0)}" stroke="#3a4c70" stroke-width="2"/>`;
   bars.forEach((b, i) => {
-    const x = left + slot * i + (slot - bw) / 2;
+    const x = left + slot * i + (slot - bw) / 2, on = hit(b.it.label);
     const y1 = yv(Math.max(b.from, b.to)), y2 = yv(Math.min(b.from, b.to));
     const col = b.total ? "#e8c478" : (b.to >= b.from ? "#5fc4b8" : "#ef8a74");
-    g += `<rect x="${x}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="5" fill="${col}"/>`;
+    g += `<rect x="${x}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="5" fill="${col}" opacity="${anyHit && !on ? 0.35 : 1}" ${on ? `stroke="#fff" stroke-width="3"` : ""}/>`;
     if (i + 1 < bars.length) { const ny = yv(b.to); g += `<line x1="${x + bw}" y1="${ny}" x2="${x + slot}" y2="${ny}" stroke="#7d8ca6" stroke-dasharray="4 4"/>`; }
     const val = b.total ? fmt(b.it.value, sc.unit) : (b.it.value >= 0 ? "+" : "") + fmt(b.it.value, sc.unit);
     g += TX(x + bw / 2, y1 - 8, [val], { s:13.5, w:800 });
-    g += TX(x + bw / 2, base + 22, wrap(b.it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12, c:"#c9d4e5" });
+    g += TX(x + bw / 2, base + 22, wrap(b.it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12, c:on ? "#fff" : "#c9d4e5", w:on ? 800 : 600 });
   });
   return `<svg viewBox="0 0 ${W} ${H + 10}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
 }
-function svgFlow(sc){
+function svgTrend(sc, hit, hl){
+  const P = (sc.periods || []).slice(0, 8), S2 = (sc.series || []).filter(s => (s.values || []).length).slice(0, 2);
+  if (!P.length || !S2.length) return ptsHTML(sc);
+  const W = 640, H = 300, L = 56, R = 600, T = 40, B = 236, n = P.length;
+  const all = S2.flatMap(s => s.values.slice(0, n));
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo || Math.abs(hi) || 1) * 0.15; lo -= pad; hi += pad;
+  if (Math.min(...all) >= 0 && lo < 0) lo = 0;
+  const xv = i => n === 1 ? (L + R) / 2 : L + i * (R - L) / (n - 1), yv = v => B - (v - lo) / (hi - lo || 1) * (B - T);
+  const cols = ["#5fc4b8", "#ef8a74"];
+  let g = `<defs><marker id="tarw0" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="7" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 z" fill="${cols[0]}"/></marker><marker id="tarw1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="7" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 z" fill="${cols[1]}"/></marker></defs>`;
+  for (let k = 0; k <= 3; k++) { const v = lo + (hi - lo) * k / 3, y = yv(v); g += `<line x1="${L}" y1="${y}" x2="${R}" y2="${y}" stroke="#22314f" stroke-width="1"/>` + TX(L - 8, y + 4, [fmt(v, sc.unit)], { s:11, a:"end", c:"#8ea0bd", w:500 }); }
+  P.forEach((p, i) => { const on = hit(p); if (on) g += `<rect x="${xv(i) - 22}" y="${T - 10}" width="44" height="${B - T + 10}" rx="8" fill="${roleColor(hl && hl.who)}" opacity=".18"/>`; g += TX(xv(i), B + 20, [p], { s:12, c:on ? "#fff" : "#c9d4e5", w:on ? 800 : 600 }); });
+  S2.forEach((s, k) => {
+    const pts = s.values.slice(0, n).map((v, i) => [xv(i), yv(v)]);
+    const on = hit(s.name);
+    g += `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${cols[k]}" stroke-width="${on ? 5 : 3.5}" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tarw${k})"/>`;
+    pts.forEach((p, i) => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${cols[k]}"/>`; });
+    const lv = s.values[Math.min(n, s.values.length) - 1], lp = pts[pts.length - 1];
+    g += TX(lp[0] - 10, lp[1] - 12, [fmt(lv, sc.unit)], { s:13, w:800, a:"end", c:cols[k] });
+    g += `<rect x="${L + k * 170}" y="6" width="12" height="12" rx="3" fill="${cols[k]}"/>` + TX(L + 18 + k * 170, 16, [s.name], { s:12.5, a:"start", c:on ? "#fff" : "#c9d4e5", w:on ? 800 : 600 });
+  });
+  const ctxt = String((typeof sc.callout === "object" && sc.callout ? sc.callout.text : sc.callout) || "");
+  const cs = S2.find(x => ctxt && ctxt.toLowerCase().includes(String(x.name || "").toLowerCase())) || S2[0];
+  const f = cs.values[0], l = cs.values[Math.min(n, cs.values.length) - 1];
+  const up = /\b(down|fell|drop|lower|decline)|(^|\s)[-−]\d/i.test(ctxt) ? false : /\b(up|rise|grew|higher)|\+\d/i.test(ctxt) ? true : l >= f, txt = ctxt || (f ? `${up ? "+" : ""}${Math.round((l - f) / Math.abs(f) * 100)}%` : "");
+  if (txt) g += `<rect x="${R - 150}" y="2" width="150" height="26" rx="13" fill="${up ? "#1f4d47" : "#5a2a24"}" stroke="${up ? "#5fc4b8" : "#ef8a74"}"/>` + TX(R - 75, 20, [(up ? "▲ " : "▼ ") + txt], { s:13, w:800, c:up ? "#8ff0e2" : "#ffb4a8" });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
+}
+function svgFlow(sc, hit, hl){
+  hit = hit || (() => false);
   const steps = (sc.steps || []).slice(0, 6);
   if (!steps.length) return ptsHTML(sc);
   const perRow = steps.length <= 3 ? steps.length : Math.ceil(steps.length / 2);
   const rows = Math.ceil(steps.length / perRow);
   const W = 640, bw = Math.min(170, (W - 40 - (perRow - 1) * 36) / perRow), bh = 112, gapX = (W - 40 - bw * perRow) / Math.max(1, perRow - 1);
-  const H = rows * (bh + 40) + 10;
+  const H = rows * (bh + 40) + 10, c = hl ? roleColor(hl.who) : "#e8c478";
   let g = `<defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8c478"/></marker></defs>`;
   steps.forEach((s, i) => {
-    const r = Math.floor(i / perRow), c = i % perRow;
-    const x = 20 + c * (bw + (perRow > 1 ? gapX : 0)), y = 10 + r * (bh + 40);
-    g += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" fill="#111b30" stroke="${i === 0 ? "#e8c478" : "#3a4c70"}" stroke-width="2"/>`;
+    const r = Math.floor(i / perRow), col = i % perRow, on = hit(s.label);
+    const x = 20 + col * (bw + (perRow > 1 ? gapX : 0)), y = 10 + r * (bh + 40);
+    g += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" fill="${on ? "#1d2c4d" : "#111b30"}" stroke="${on ? c : i === 0 ? "#e8c478" : "#3a4c70"}" stroke-width="${on ? 4 : 2}"/>`;
     g += `<circle cx="${x + 20}" cy="${y + 20}" r="13" fill="#e8c478"/>` + TX(x + 20, y + 25, [String(i + 1)], { s:13, w:800, c:"#1a1405" });
     g += TX(x + bw / 2 + 10, y + 26, wrap(s.label, Math.floor(bw / 9.5), 2), { s:14, w:800 });
     g += TX(x + bw / 2, y + 66, wrap(s.note, Math.floor(bw / 7.2), 3), { s:12, w:500, c:"#c9d4e5", lh:15 });
     if (i + 1 < steps.length) {
-      if (c + 1 < perRow) g += `<line x1="${x + bw + 3}" y1="${y + bh / 2}" x2="${x + bw + gapX - 5}" y2="${y + bh / 2}" stroke="#e8c478" stroke-width="2.5" marker-end="url(#ar)"/>`;
+      if (col + 1 < perRow) g += `<line x1="${x + bw + 3}" y1="${y + bh / 2}" x2="${x + bw + gapX - 5}" y2="${y + bh / 2}" stroke="#e8c478" stroke-width="2.5" marker-end="url(#ar)"/>`;
       else g += `<path d="M${x + bw / 2} ${y + bh + 3} L${x + bw / 2} ${y + bh + 20} L${20 + bw / 2} ${y + bh + 20} L${20 + bw / 2} ${y + bh + 36}" fill="none" stroke="#e8c478" stroke-width="2.5" marker-end="url(#ar)"/>`;
     }
   });
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
 }
-function svgCycle(sc){
+function svgCycle(sc, hit, hl){
+  hit = hit || (() => false);
   const steps = (sc.steps || []).slice(0, 6);
-  if (steps.length < 3) return svgFlow(sc);
-  const W = 640, H = 340, cx = 320, cy = 168, rx = 220, ry = 118, n = steps.length;
+  if (steps.length < 3) return svgFlow(sc, hit, hl);
+  const W = 640, H = 340, cx = 320, cy = 168, rx = 220, ry = 118, n = steps.length, c = hl ? roleColor(hl.who) : "#5fc4b8";
   let g = `<defs><marker id="ac" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8c478"/></marker></defs>`;
   g += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#3a4c70" stroke-width="2" stroke-dasharray="6 6"/>`;
   const pt = i => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; };
@@ -1432,21 +1559,22 @@ function svgCycle(sc){
     g += `<path d="M${cx + rx * Math.cos(a1)} ${cy + ry * Math.sin(a1)} A ${rx} ${ry} 0 0 1 ${cx + rx * Math.cos(a2)} ${cy + ry * Math.sin(a2)}" fill="none" stroke="#e8c478" stroke-width="3" marker-end="url(#ac)"/>`;
   }
   steps.forEach((s, i) => {
-    const [x, y] = pt(i), bw = 150, bh = 62;
-    g += `<rect x="${x - bw / 2}" y="${y - bh / 2}" width="${bw}" height="${bh}" rx="12" fill="#111b30" stroke="#5fc4b8" stroke-width="2"/>`;
+    const [x, y] = pt(i), bw = 150, bh = 62, on = hit(s.label);
+    g += `<rect x="${x - bw / 2}" y="${y - bh / 2}" width="${bw}" height="${bh}" rx="12" fill="${on ? "#1d2c4d" : "#111b30"}" stroke="${on ? c : "#5fc4b8"}" stroke-width="${on ? 4 : 2}"/>`;
     g += TX(x, y - 8, wrap(s.label, 17, 1), { s:13.5, w:800 });
     g += TX(x, y + 10, wrap(s.note, 24, 2), { s:11, w:500, c:"#c9d4e5", lh:13 });
   });
   g += TX(cx, cy + 4, wrap(sc.title, 22, 2), { s:15, w:800, c:"#e8c478", lh:18 });
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
 }
-function svgScale(sc){
+function svgScale(sc, hl){
   const tilt = sc.lean === "left" ? -9 : sc.lean === "right" ? 9 : 0;
   const L = (sc.left && sc.left.heading) || "A", R = (sc.right && sc.right.heading) || "B";
+  const sl = hl && hl.side === "left", sr = hl && hl.side === "right";
   let g = `<polygon points="320,170 296,215 344,215" fill="#e8c478"/><rect x="250" y="215" width="140" height="10" rx="4" fill="#5a3a22"/>`;
   g += `<g transform="rotate(${tilt} 320 168)"><rect x="110" y="162" width="420" height="10" rx="5" fill="#c9d4e5"/>
     <line x1="150" y1="167" x2="150" y2="110" stroke="#c9d4e5" stroke-width="2"/><line x1="490" y1="167" x2="490" y2="110" stroke="#c9d4e5" stroke-width="2"/>
-    <rect x="80" y="70" width="140" height="44" rx="10" fill="#5fc4b8"/><rect x="420" y="70" width="140" height="44" rx="10" fill="#ef8a74"/>
+    <rect x="80" y="70" width="140" height="44" rx="10" fill="#5fc4b8" ${sl ? `stroke="#fff" stroke-width="4"` : ""}/><rect x="420" y="70" width="140" height="44" rx="10" fill="#ef8a74" ${sr ? `stroke="#fff" stroke-width="4"` : ""}/>
     ${TX(150, 97, wrap(L, 16, 1), { s:14, w:800, c:"#0d1526" })}${TX(490, 97, wrap(R, 16, 1), { s:14, w:800, c:"#0d1526" })}</g>`;
   return `<svg viewBox="0 0 640 235" role="img" aria-label="${esc(sc.title)}" style="max-height:200px">${g}</svg>`;
 }
@@ -1464,12 +1592,14 @@ function setJump(on, prompts, clarify){
   const mv = [];
   mv.push(`<button class="move ${jumpMode === "interrupt" ? "on" : ""}" id="mvInt" type="button" ${live ? "" : "disabled"} title="Stop the speaker and say your piece">✋ Interrupt</button>`);
   mv.push(`<button class="move ${jumpMode === "question" ? "on" : ""}" id="mvQ" type="button">❓ Question</button>`);
-  mv.push(`<button class="move" id="mvExp" type="button" ${S.lastRole && !S.busy ? "" : "disabled"} title="Say that last point more simply">🔍 Explain That</button>`);
+  mv.push(`<button class="move" id="mvExp" type="button" ${S.lastRole ? "" : "disabled"} title="Say that last point more simply">🔍 Explain That</button>`);
   if (meet) {
-    mv.push(`<button class="move" id="mvPush" type="button" ${S.lastRole && !S.busy ? "" : "disabled"} title="Another executive challenges the last point">⚔️ Push Back</button>`);
-    mv.push(`<button class="move" id="mvVote" type="button" ${!S.busy ? "" : "disabled"} title="Each executive votes yes or no">🗳️ Call a Vote</button>`);
+    mv.push(`<button class="move" id="mvPush" type="button" ${S.lastRole && !S.closed ? "" : "disabled"} title="Another executive challenges the last point">⚔️ Push Back</button>`);
+    mv.push(`<button class="move" id="mvVote" type="button" ${!S.closed ? "" : "disabled"} title="Each executive votes yes or no">🗳️ Call a Vote</button>`);
   }
+  mv.push(`<button class="move ${defOpen ? "on" : ""}" id="mvDef" type="button" title="Define any term from the meeting">📖 Define That</button>`);
   $("moves").innerHTML = mv.join("");
+  $("mvDef").onclick = () => { defOpen = !defOpen; paintDefine(); setJump(on); };
   $("mvInt").onclick = () => { S.interrupted = speakerNow(); if (speaking && !paused) $("pauseBtn").click(); jumpMode = "interrupt"; setJump(false); $("jumpIn").focus(); };
   $("mvQ").onclick = () => { jumpMode = "question"; setJump(!S.busy); $("jumpIn").focus(); };
   $("mvExp").onclick = () => meet ? meetingStep("explain") : followUp("Explain that last point more simply, with an everyday example.", true);
@@ -1509,20 +1639,22 @@ function setJump(on, prompts, clarify){
 
   // Next steps
   const A = [];
-  if (meet && on) {
-    if (S.rounds < 6) A.push(`<button class="act" id="aNext" type="button">▶ Keep the meeting going</button>`);
-    A.push(`<button class="act gold" id="aClose" type="button">🔨 Close the meeting (Chair's Takeaway)</button>`);
-    if (S.rounds >= 6) $("jHint").textContent = "Great meeting! Time for the Chair to wrap it up, or ask one more question.";
+  if (meet && !S.closed) {
+    const running = S.busy && !S.meetPaused;
+    A.push(running ? `<button class="act" id="aPause" type="button">⏸ Pause Meeting</button>` : `<button class="act gold" id="aGo" type="button">▶ Continue Meeting</button>`);
+    A.push(`<button class="act" id="aClose" type="button">🔨 Close the meeting now</button>`);
+    A.push(`<span class="note" style="align-self:center;margin:0">Round ${Math.min(S.rounds, S.maxRounds)} of ${S.maxRounds}${S.meetPaused ? " · paused" : ""}</span>`);
   }
   if (!meet && on) { A.push(`<button class="act" id="aMeet" type="button">🗣️ Turn this into a meeting</button>`); A.push(`<button class="act" id="aNew" type="button">↺ New topic</button>`); }
   if (S.history.length) A.push(`<button class="act" id="aDl" type="button">⬇ Download notes</button>`);
   $("acts").innerHTML = A.join("");
-  if ($("aNext")) $("aNext").onclick = () => meetingStep("next");
+  if ($("aPause")) $("aPause").onclick = pauseMeeting;
+  if ($("aGo")) $("aGo").onclick = continueMeeting;
   if ($("aClose")) $("aClose").onclick = () => meetingStep("close");
   if ($("aMeet")) $("aMeet").onclick = turnIntoMeeting;
   if ($("aNew")) $("aNew").onclick = () => showSetup();
   if ($("aDl")) $("aDl").onclick = downloadNotes;
-  const pr = on && !S.clarify ? lastPrompts : [];
+  const pr = !(on && S.clarify) && !S.closed ? lastPrompts : [];
   $("prompts").innerHTML = pr && pr.length ? pr.map(p => `<button class="qchip" type="button">💬 ${esc(p)}</button>`).join("") : "";
   $("prompts").querySelectorAll(".qchip").forEach(b => b.onclick = () => { $("jumpIn").value = b.textContent.replace(/^💬\s*/, ""); $("jumpGo").click(); });
 }
@@ -1541,15 +1673,17 @@ $("jumpGo").onclick = () => {
 async function meetingStep(step, userText){
   const interrupted = S.interrupted; S.interrupted = null;
   S.token++; stopVoice();
-  S.busy = true; S.clarify = null; setJump(false, [], null); $("acts").innerHTML = ""; $("prompts").innerHTML = "";
+  S.busy = true; S.clarify = null; S.meetPaused = false; setJump(false, null, null);
+  const pre = step === "next" && S.pre && S.pre.histLen === S.history.length ? S.pre.promise : null;
+  S.pre = null;
   if (userText) { S.history.push({ who:"user", text:userText }); logRow("user", userText); paintCaption(userText.split(/\s+/).map(w => ({ w, t:null })), "user"); }
   const msgs = { close:"Mr. Paul is writing the Chair's Takeaway…", explain:"Putting that more simply…", pushback:"Someone's about to push back…", vote:"Mr. Paul is calling the vote…", interrupt:"The room heard you. One moment…", user:"The room is thinking about your point…", next:"The room is picking it back up…" };
   think(msgs[step] || "One moment…");
-  const body = Object.assign({ part:"meeting", step, table:S.table, level:S.level, topic:S.topic, category:S.category, seats:S.seats, history:S.history, userText, target:jumpTarget, interrupted, lastRole:S.lastRole }, ctx(false));
+  const body = Object.assign({ part:"meeting", step, table:S.table, level:S.level, topic:S.topic, category:S.category, seats:S.seats, history:S.history, userText, target:jumpTarget, interrupted, lastRole:S.lastRole, round:S.rounds + 1, maxRounds:S.maxRounds }, ctx(false));
   try {
-    const j = await post("/api/boardroom", body, 90000);
+    const j = (pre && await pre) || await post("/api/boardroom", body, 120000);
     if (step === "close") {
-      S.takeaway = j;
+      S.takeaway = j; S.closed = true;
       await playBatch([{ who:"chair", text:j.chair, screen:j.screen }], [], null);
       showAdjourn(j);
       return;
@@ -1565,14 +1699,93 @@ async function meetingStep(step, userText){
       S.votes.push({ question: j.chair || S.topic, votes: j.votes });
     }
     if (j.chair) beats.push({ who:"chair", text:j.chair, screen });
-    j.lines.forEach((l, i) => beats.push({ who:l.role, text:l.text, screen: (!j.chair && i === 0) ? screen : null }));
-    await playBatch(beats, j.next_prompts, j.clarify);
+    j.lines.forEach((l, i) => beats.push(lineBeat(l, (!j.chair && i === 0) ? screen : null)));
+    await playBatch(beats, j.next_prompts, j.clarify, { prefetch:true, after:autoNext });
   } catch(e) {
-    think(false); S.busy = false;
+    think(false); S.busy = false; S.meetPaused = true;
     $("caption").innerHTML = `<span class="ph">${esc(errText(e))}</span>`;
     setJump(true, [], null);
   }
 }
+// A line from the server becomes a beat: its own new screen (if any), what to highlight, and a sticky note
+function lineBeat(l, baseScreen){ return { who:l.role, text:l.text, screen: l.screen || baseScreen || null, highlight: l.highlight || null, note: l.note || "" }; }
+// The meeting keeps going on its own until it's paused, you jump in, the board asks you something, or it reaches its length
+function autoNext(clarify){
+  if (S.mode !== "meeting" || S.closed || clarify || S.meetPaused) { setJump(true); return; }
+  if (S.rounds >= S.maxRounds) return meetingStep("close");
+  meetingStep("next");
+}
+function startPrefetch(beats){
+  if (S.mode !== "meeting" || S.closed || S.rounds >= S.maxRounds) return;
+  // History at the end of this batch = what's been said so far + the lines of this batch not yet spoken
+  const spoken = S.history.length - S.batchStart;
+  const full = S.history.concat(beats.slice(spoken).map(b => ({ who:b.who, text:b.text })));
+  const last = [...full].reverse().find(h => h.who !== "chair" && h.who !== "user");
+  const body = Object.assign({ part:"meeting", step:"next", table:S.table, level:S.level, topic:S.topic, category:S.category, seats:S.seats, history:full, lastRole: last ? last.who : S.lastRole, round:S.rounds + 1, maxRounds:S.maxRounds }, ctx(false));
+  S.pre = { histLen: full.length, promise: post("/api/boardroom", body, 120000).catch(() => null) };
+}
+function pauseMeeting(){ S.meetPaused = true; if (speaking && !paused) $("pauseBtn").click(); else setJump(!S.busy); }
+function continueMeeting(){
+  S.meetPaused = false;
+  if (speaking && paused) { $("contBtn").click(); setJump(false); return; }
+  if (!S.busy) { S.clarify = null; autoNext(null); } else setJump(false);
+}
+
+// ----- Define That: every business term mentioned so far, one tap away -----
+let defOpen = false, defShown = "";
+function termsMentioned(){
+  const text = S.history.map(h => h.text).join(" \n ");
+  const found = new Map();
+  GLOSS.concat(Object.values(S.extraTerms)).forEach(x => {
+    const names = [x.t.replace(/\s*\(.*\)\s*/, "").trim()];
+    const m = x.t.match(/\(([^)]+)\)/); if (m) m[1].split(/\s*\/\s*/).forEach(a => names.push(a.trim()));
+    let pos = -1;
+    names.forEach(n => {
+      if (!n || n.length < 3) return;
+      const acr = /^[A-Z0-9&()]{2,6}$/.test(n);
+      const re = new RegExp("\\b" + n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "s?\\b", acr ? "g" : "gi");
+      let r; while ((r = re.exec(text))) pos = Math.max(pos, r.index);
+    });
+    if (pos >= 0) found.set(x.t, { t:x.t, pos, card:x });
+  });
+  S.screens.forEach((sc, i) => (sc && sc.terms || []).forEach(t => { if (![...found.keys()].some(k => k.toLowerCase().startsWith(t.word.toLowerCase()))) found.set(t.word, { t:t.word, pos:1e9 + i, meaning:t.meaning }); }));
+  return [...found.values()].sort((a, b) => b.pos - a.pos).slice(0, 30);
+}
+function defCardHTML(x){
+  if (x.card) { const c = x.card, W = ROLES[c.w] || ROLES.cfo; return `<div class="defcard"><h4>${esc(c.t)}</h4><p>${esc(S.level === "starter" && c.s ? c.s : c.d)}</p>${c.f ? `<div class="f">${esc(c.f)}</div>` : ""}${c.e ? `<p style="color:#d7deea;font-size:13.5px">${esc(c.e)}</p>` : ""}${S.level !== "starter" && c.s ? `<p style="font-size:13.5px;color:#cfe9e5">🌱 ${esc(c.s)}</p>` : ""}<p class="note" style="margin:4px 0 0">👀 Watched most by the ${esc(W.name)}</p></div>`; }
+  return `<div class="defcard"><h4>${esc(x.t)}</h4><p>${esc(x.meaning || "")}</p></div>`;
+}
+function paintDefine(){
+  const P = $("defPanel");
+  P.classList.toggle("hide", !defOpen);
+  if (!defOpen) return;
+  const L = termsMentioned();
+  const cur = L.find(x => x.t === defShown);
+  P.innerHTML = `<div class="dh"><span>📖 Define That: terms from this ${S.mode === "meeting" ? "meeting" : "session"}</span><button type="button" aria-label="Close">✕</button></div>
+    <div class="chips">${L.length ? L.map(x => `<button class="chip ${x.t === defShown ? "on" : ""}" type="button">${esc(x.t)}</button>`).join("") : `<span class="note" style="margin:0">Terms show up here as they're mentioned.</span>`}</div>
+    ${cur ? defCardHTML(cur) : ""}
+    <div class="boxlab" style="margin-top:8px">Or type any word you heard</div>
+    <div class="own"><input id="defIn" maxlength="80" autocomplete="off" aria-label="Term to define"><button class="go" id="defGo" type="button">Define</button></div>
+    <div id="defOut"></div>`;
+  P.querySelector(".dh button").onclick = () => { defOpen = false; paintDefine(); setJump(!S.busy); };
+  P.querySelectorAll(".chips .chip").forEach(b => b.onclick = () => { defShown = defShown === b.textContent ? "" : b.textContent; paintDefine(); });
+  $("defIn").addEventListener("keydown", e => { if (e.key === "Enter") $("defGo").click(); });
+  $("defGo").onclick = async () => {
+    const q = $("defIn").value.trim(); if (!q) return;
+    const ql = q.toLowerCase();
+    const hit = GLOSS.concat(Object.values(S.extraTerms)).find(x => x.t.toLowerCase() === ql || x.t.toLowerCase().startsWith(ql + " ") || (x.t.match(/\(([^)]+)\)/) || ["", ""])[1].toLowerCase().split(/\s*\/\s*/).includes(ql));
+    if (hit) { $("defOut").innerHTML = defCardHTML({ t:hit.t, card:hit }); return; }
+    $("defOut").innerHTML = `<div class="note">📖 Looking up “${esc(q)}”…</div>`;
+    try {
+      const j = await post("/api/boardroom", { part:"term", term:q, level:S.level }, 40000);
+      if (!j || j.ok === false || !j.term) { $("defOut").innerHTML = `<div class="note">That doesn't look like a business or money term. Try another word.</div>`; return; }
+      const card = { t:j.term, d:j.definition, f:j.formula || "", e:j.example || "", w:j.watches || "cfo", s:j.starter || "", door:j.door || "Money Basics", ai:true };
+      S.extraTerms[card.t.toLowerCase()] = card;
+      $("defOut").innerHTML = defCardHTML({ t:card.t, card });
+    } catch(e) { $("defOut").innerHTML = `<div class="note">${esc(errText(e))}</div>`; }
+  };
+}
+
 function showAdjourn(j){
   const A = $("adjourn");
   A.innerHTML = `<h3>🔨 Meeting adjourned</h3><div class="note" style="margin:0">Chair's Takeaway</div>
@@ -1622,6 +1835,7 @@ function downloadNotes(){
   const votes = S.votes.length ? `<h2>Votes</h2>${S.votes.map(v => `<p><b>${esc(v.question)}</b></p><ul>${v.votes.map(x => `<li>${esc(ROLES[x.role].name)}: ${x.vote === "depends" ? "It depends" : x.vote === "yes" ? "Yes" : "No"}. ${esc(x.reason)}</li>`).join("")}</ul>`).join("")}` : "";
   const terms = []; S.screens.forEach(sc => (sc && sc.terms || []).forEach(t => { if (!terms.find(x => x.word.toLowerCase() === t.word.toLowerCase())) terms.push(t); }));
   const termsHTML = terms.length ? `<h2>Key terms</h2><dl>${terms.map(t => `<dt>${esc(t.word)}</dt><dd>${esc(t.meaning)}</dd>`).join("")}</dl>` : "";
+  const notesHTML = S.notes.length ? `<h2>Meeting notes</h2>${[...new Set(S.notes.map(n => n.who))].map(w => `<p><b>${esc(nameOf(w))}</b></p><ul>${S.notes.filter(n => n.who === w).map(n => `<li>${esc(n.text)}</li>`).join("")}</ul>`).join("")}` : "";
   const transcript = S.history.map(h => `<p class="line ${h.who === "user" ? "you" : ""}"><b>${esc(nameOf(h.who))}:</b> ${esc(h.text)}</p>`).join("");
   const doc = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Boardroom: ${esc(S.title || S.topic)}</title>
 <style>body{font-family:Georgia,'Times New Roman',serif;color:#1b1b1b;max-width:760px;margin:30px auto;padding:0 20px;line-height:1.55}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;border-bottom:2px solid #c99a3e;padding-bottom:4px;margin-top:28px}.meta{font-family:Arial,sans-serif;color:#555;font-size:14px}.box{font-family:Arial,sans-serif;background:#f7f2e8;border:1px solid #e3d5b8;border-radius:8px;padding:10px 14px;font-size:14px;white-space:pre-wrap}.lesson{font-weight:bold;background:#fff8e6;border-left:4px solid #c99a3e;padding:8px 12px}.line{margin:8px 0}.line.you b{color:#0a6b62}.soft{color:#666}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 0 0}.foot{font-family:Arial,sans-serif;font-size:12px;color:#777;margin-top:30px;border-top:1px solid #ddd;padding-top:10px}.pb{font-family:Arial,sans-serif;background:#c99a3e;color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer}@media print{.pb{display:none}}</style></head><body>
@@ -1631,7 +1845,7 @@ function downloadNotes(){
 <p class="meta">${esc(kind)} · ${S.table === "corporate" ? "Corporate Table" : "Main Street Table"} · ${S.level === "starter" ? "Starter" : "Executive"} level · ${esc(when)}</p>
 <p class="meta"><b>Topic:</b> ${esc(S.topic)}<br><b>At the table:</b> ${who.map(esc).join(", ")}${S.docName ? `<br><b>Reviewed:</b> ${esc(S.docName)}` : ""}</p>
 ${brief ? `<h2>Company brief</h2><div class="box">${esc(brief)}</div>` : ""}
-${summary}${votes}${termsHTML}
+${summary}${votes}${notesHTML}${termsHTML}
 <h2>Full transcript</h2>${transcript}
 <p class="foot">Example numbers in The Boardroom are made up for teaching unless they came from your own document. This was a learning discussion, not financial, legal or tax advice. For your own situation, talk with a licensed professional.</p>
 </body></html>`;
