@@ -1,0 +1,1677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- LearnWow member pass (do not remove): gets the member pass from nusparklearnwow.com and shows the Join screen when a visitor runs out of tries -->
+<script>
+(function () {
+  if (window.__lwgate) return; window.__lwgate = 1;
+  var JOIN = "https://nusparklearnwow.com/join/", LOGIN = "https://nusparklearnwow.com/membership-login/";
+  var LW = { pass: null, vid: "" };
+  try { LW.vid = localStorage.getItem("lw_vid") || ""; if (!LW.vid) { LW.vid = (Date.now().toString(36) + Math.random().toString(36).slice(2, 12)); localStorage.setItem("lw_vid", LW.vid); } }
+  catch (e) { LW.vid = "s" + Math.random().toString(36).slice(2, 12); }
+  var okHost = /(^|\.)(nusparklearnwow|nusparkpublishing|nusparkmarketing)\.com$/;
+  var ready = new Promise(function (done) {
+    if (window.parent === window) return done();
+    var fin = false, end = function () { if (!fin) { fin = true; done(); } };
+    window.addEventListener("message", function (e) {
+      var d = e.data; if (!d || d.type !== "lw-pass") return;
+      try { if (!okHost.test(new URL(e.origin).hostname)) return; } catch (x) { return; }
+      LW.pass = d.pass || null;
+      if (d.vid && /^[a-z0-9]{6,40}$/i.test(d.vid)) LW.vid = "w" + d.vid;
+      end();
+    });
+    try { window.parent.postMessage({ type: "lw-pass-request" }, "*"); } catch (x) {}
+    setTimeout(end, 1500);
+  });
+
+  var lastAct = 0;
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) { window.addEventListener(ev, function (e) { if (e.isTrusted) lastAct = Date.now(); }, true); });
+
+  var shown = false;
+  function show(j) {
+    if (shown) return; shown = true;
+    var reason = j && j.lwgate;
+    var title = reason === "budget" ? "You've reached this month's limit" : reason === "preview" ? "This is a members feature" : "You've used your tries";
+    var text = reason === "budget"
+      ? "Your membership has hit its monthly usage limit. It resets at the start of next month. Questions? Contact us at nusparklearnwow.com/support."
+      : "Join LearnWow to unlock all 21 experiences. 7-day trial, then $29.99/month. Cancel anytime.";
+    var box = document.createElement("div");
+    box.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;background:rgba(10,25,60,.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif");
+    var btn = "display:inline-block;margin:6px;padding:14px 28px;border-radius:40px;font-weight:800;font-size:17px;text-decoration:none;";
+    box.innerHTML =
+      '<div style="background:#123166;color:#fff;max-width:440px;width:100%;border-radius:22px;padding:30px 26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.35)">' +
+      '<div style="font-size:40px;line-height:1;color:#F2B33D">&#10022;</div>' +
+      '<div style="font-size:24px;font-weight:800;margin:10px 0 8px">' + title + '</div>' +
+      '<div style="font-size:16px;line-height:1.5;opacity:.92;margin-bottom:18px">' + text + '</div>' +
+      (reason === "budget" ? "" : '<a target="_top" href="' + JOIN + '" style="' + btn + 'background:#F2B33D;color:#123166">Join Now</a>') +
+      '<a target="_top" href="' + LOGIN + '" style="' + btn + 'background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)">Member Log In</a>' +
+      '<div><button type="button" style="margin-top:10px;background:none;border:0;color:#cfd8ef;font-size:14px;cursor:pointer;text-decoration:underline">Keep looking around</button></div>' +
+      "</div>";
+    box.querySelector("button").onclick = function () { box.remove(); shown = false; };
+    (document.body || document.documentElement).appendChild(box);
+  }
+
+  var of = window.fetch && window.fetch.bind(window);
+  if (!of) return;
+  window.fetch = function (input, init) {
+    var url = typeof input === "string" ? input : (input && input.url) || String(input || "");
+    var u; try { u = new URL(url, location.href); } catch (e) { return of(input, init); }
+    if (u.origin !== location.origin || u.pathname.indexOf("/api/") !== 0) return of(input, init);
+    var act = Date.now() - lastAct < 30000;
+    return ready.then(function () {
+      var o = {}; if (init) for (var k in init) o[k] = init[k];
+      var hd = new Headers(o.headers || (typeof input !== "string" && input && input.headers) || undefined);
+      if (LW.pass) hd.set("x-lw-pass", LW.pass);
+      hd.set("x-lw-vid", LW.vid);
+      if (act) hd.set("x-lw-act", "1");
+      o.headers = hd;
+      return of(input, o);
+    }).then(function (r) {
+      if (r.status === 402) r.clone().json().then(function (j) { if (j && j.lwgate) show(j); }).catch(function () {});
+      return r;
+    });
+  };
+})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Boardroom</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1526; --panel:#152139; --panel2:#1b2a47; --line:#2b3d61; --ink:#eef2f8; --muted:#a3b2c9;
+  --gold:#e8c478; --gold2:#c99a3e; --wood:#5a3a22; --teal:#5fc4b8; --coral:#ef8a74; --blue:#7fa8e8;
+  --wall:#0a1120;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 16px 40px}
+h1,h2,h3{margin:0}
+.serif{font-family:'Playfair Display',Georgia,serif}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo .mark{width:46px;height:46px;border-radius:12px;background:linear-gradient(145deg,#7a4e2c,#3e2513);display:grid;place-items:center;font-size:24px;border:2px solid var(--gold2)}
+.logo h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(24px,3.4vw,34px);letter-spacing:.5px;line-height:1.05}
+.logo h1 span{color:var(--gold)}
+.logo small{display:block;color:var(--muted);font-size:13.5px}
+.topr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:30px;padding:3px}
+.seg button{background:none;border:0;color:var(--muted);font-weight:700;font-size:14px;padding:7px 14px;border-radius:30px}
+.seg button.on{background:var(--gold);color:#1a1405}
+.pill{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:14px;padding:8px 14px;border-radius:30px}
+.pill:hover{border-color:var(--gold2)}
+.pill.danger{border-color:#7d3a3a;color:#ffd9d9}
+
+/* banner of images */
+.banner{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;border-radius:16px;overflow:hidden;margin-bottom:18px;border:1px solid var(--line)}
+.banner img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:center 22%;display:block;filter:saturate(1.05)}
+.banner .shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(13,21,38,.86) 0%,rgba(13,21,38,.05) 55%);pointer-events:none}
+.banner .txt{position:absolute;left:18px;bottom:12px;right:18px}
+.banner .txt b{font-family:'Playfair Display',Georgia,serif;font-size:clamp(18px,2.6vw,28px);color:#fff;display:block;line-height:1.15}
+.banner .txt span{color:var(--gold);font-weight:700;font-size:14px}
+@media(max-width:640px){.banner{grid-template-columns:repeat(3,1fr)}.banner img:nth-child(n+4){display:none}}
+
+/* steps */
+.step{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+.step h2{font-size:21px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.step h2 b{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#1a1405;display:grid;place-items:center;font-size:16px;flex:none}
+.sub{color:var(--muted);margin:0 0 12px;font-size:14.5px}
+.tables{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tcard{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:16px;padding:14px;color:var(--ink)}
+.tcard.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,196,120,.18)}
+.tcard .faces3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.tcard .faces3 img{width:100%;aspect-ratio:1;object-fit:cover;object-position:center 20%;border-radius:10px;display:block}
+.tcard h3{font-family:'Playfair Display',Georgia,serif;font-size:20px}
+.tcard p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.rcard{text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px;color:var(--ink)}
+.rcard.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,196,120,.18)}
+.rcard .ic{font-size:26px}
+.rcard b{display:block;font-size:16px;margin:4px 0 2px}
+.rcard small{color:var(--muted);font-size:13.5px;line-height:1.4;display:block}
+@media(max-width:860px){.rooms{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.tables{grid-template-columns:1fr}.rooms{grid-template-columns:1fr}}
+
+/* seats */
+.seats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.seat{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:10px;position:relative}
+.seat.on{border-color:var(--gold)}
+.seat .pick{all:unset;cursor:pointer;display:block}
+.seat .ph{position:relative;border-radius:10px;overflow:hidden}
+.seat img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:center 25%;display:block}
+.seat .chk{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(10,17,32,.75);border:2px solid var(--line);display:grid;place-items:center;font-weight:800;color:#1a1405}
+.seat.on .chk{background:var(--gold);border-color:var(--gold)}
+.seat .nm{font-weight:800;font-size:16px;margin:8px 0 2px}
+.seat .jb{color:var(--muted);font-size:13px;line-height:1.35;margin-bottom:8px}
+.mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.mini .lab{width:100%;font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.chip{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:13.5px;font-weight:600;padding:6px 10px;border-radius:20px}
+.chip.on{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.chip:hover{border-color:var(--gold2)}
+@media(max-width:760px){.seats{grid-template-columns:1fr}}
+
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px}
+.qs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.qchip{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:14px;padding:8px 12px;border-radius:12px;text-align:left}
+.qchip:hover{border-color:var(--gold)}
+.boxlab{font-size:14px;color:var(--muted);margin:6px 0 6px}
+.own{display:flex;gap:8px}
+.own input,.own textarea{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-size:16px;padding:12px 14px;font-family:inherit}
+.own input:focus,.own textarea:focus{outline:2px solid var(--gold2)}
+.go{background:var(--gold);border:0;color:#1a1405;font-weight:800;font-size:16px;padding:12px 20px;border-radius:12px;white-space:nowrap}
+.go:disabled{opacity:.5;cursor:default}
+.go.big{font-size:18px;padding:14px 26px}
+.status{min-height:22px;color:var(--gold);font-weight:600;font-size:14.5px;margin-top:8px}
+.status.err{color:#ffb4a8}
+.mic{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-size:20px;width:52px;border-radius:12px}
+.mic.listening{background:#7d2b2b;border-color:#e57373}
+.note{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.45}
+.note b{color:var(--ink)}
+
+/* glossary */
+.gtools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.gtools input{flex:1;min-width:200px;background:var(--bg);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-size:16px;padding:11px 14px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.gcard{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.gcard h4{margin:0 0 4px;font-size:17px;color:var(--gold)}
+.gcard .door{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700}
+.gcard p{margin:6px 0;font-size:14.5px;line-height:1.45}
+.gcard .f{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px;margin:6px 0}
+.gcard .ex{font-size:13.5px;color:#d7deea}
+.gcard .st{font-size:13.5px;color:#cfe9e5;background:rgba(95,196,184,.08);border-left:3px solid var(--teal);padding:6px 8px;border-radius:6px}
+.gcard .who{font-size:13px;color:var(--muted)}
+.gcard .bring{margin-top:8px;width:100%;background:var(--bg);border:1px solid var(--gold2);color:var(--gold);font-weight:700;font-size:14px;padding:8px;border-radius:10px}
+.gcard .bring:hover{background:var(--gold);color:#1a1405}
+.gempty{color:var(--muted);padding:10px 2px}
+
+/* Mr. Paul chair host */
+.mphost{display:flex;align-items:center;gap:14px;margin:18px 0 4px}
+.mphost .mpfig{width:92px;flex:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.mphost .mpfig svg{width:100%;height:auto;display:block}
+.mphost .mpbub{position:relative;background:#1b2a47;color:#f7f2ff;border:2px solid var(--gold);border-radius:16px;padding:10px 16px;font-weight:700;font-size:16px;line-height:1.35;max-width:340px}
+.mphost .mpbub::before{content:"";position:absolute;left:-11px;top:50%;margin-top:-9px;border:9px solid transparent;border-right-color:var(--gold);border-left:0}
+.mphost .mpbub::after{content:"";position:absolute;left:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-right-color:#1b2a47;border-left:0}
+@media(max-width:560px){.mphost .mpfig{width:72px}.mphost .mpbub{font-size:15px}}
+.foot{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.5}
+
+/* ===== room ===== */
+.agenda{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;background:linear-gradient(135deg,#3b2615,#24170d);border:1px solid #6b4a2b;border-radius:16px;padding:14px 18px;margin-bottom:14px}
+.agenda .k{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);font-weight:800}
+.agenda h2{font-family:'Playfair Display',Georgia,serif;font-size:clamp(20px,2.8vw,28px);line-height:1.2}
+.agenda .q{color:#e9dccb;font-size:14.5px;margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:20px;background:rgba(0,0,0,.3);border:1px solid #6b4a2b;color:#f2e3cc}
+.roomgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:14px}
+@media(max-width:900px){.roomgrid{grid-template-columns:1fr}}
+.tablebox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.people{display:grid;gap:8px;grid-template-columns:repeat(var(--n,3),1fr)}
+.person{position:relative;border-radius:12px;overflow:hidden;border:2px solid transparent;transition:border-color .2s,transform .2s,opacity .2s;opacity:.72;background:#0a1120}
+.person img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center 22%;display:block}
+.person .plate{position:absolute;left:6px;right:6px;bottom:6px;background:rgba(10,17,32,.82);border-radius:8px;padding:4px 8px;font-weight:800;font-size:13px;line-height:1.25}
+.person .plate small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
+.person.live{border-color:var(--gold);opacity:1;transform:translateY(-2px)}
+.person.live .plate{background:rgba(232,196,120,.95);color:#1a1405}
+.person.live .plate small{color:#3a2c0a}
+.person.chair{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#22355c,#121c31)}
+.person.chair svg{width:78%;height:auto;margin-bottom:34px}
+.person .wave{position:absolute;top:8px;right:8px;display:none;gap:3px;align-items:flex-end;height:18px}
+.person.live.talking .wave{display:flex}
+.wave i{display:block;width:4px;background:var(--gold);border-radius:2px;animation:wv .9s infinite ease-in-out}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}
+@keyframes wv{0%,100%{height:5px}50%{height:18px}}
+@media(max-width:560px){.person .plate{font-size:11.5px;padding:3px 6px;left:4px;right:4px;bottom:4px}.person .plate small{display:none}.person.chair svg{width:70%;margin-bottom:20px}}
+.caption{background:var(--wall);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:110px;font-size:17px;line-height:1.55}
+.caption .spk{color:var(--gold);font-weight:800;margin-right:6px}
+.caption .w{transition:color .1s}
+.caption.speaking .w{color:#8091ab}
+.caption.speaking .w.done{color:var(--ink)}
+.caption.speaking .w.on{color:#fff;background:rgba(232,196,120,.25);border-radius:4px}
+.caption .ph{color:var(--muted)}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cbtn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px}
+.cbtn:disabled{opacity:.45;cursor:default}
+.rategrp{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);font-weight:600}
+.rategrp input{width:110px;accent-color:var(--gold)}
+.thinking{display:none;align-items:center;gap:10px;color:var(--gold);font-weight:700;font-size:14.5px}
+.thinking.on{display:flex}
+.dots{display:flex;gap:4px}.dots span{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:bl 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+.wallbox{position:relative;background:linear-gradient(180deg,#3d2816,#2a1b0f);border:1px solid #6b4a2b;border-radius:18px;padding:12px}
+.wallhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.wallhead h3{font-size:16px;color:#f2e3cc}
+.pager{display:flex;align-items:center;gap:6px;font-size:13px;color:#e9dccb;font-weight:700}
+.pager button{background:rgba(0,0,0,.3);border:1px solid #6b4a2b;color:#fff;width:30px;height:30px;border-radius:8px;font-size:16px}
+.pager button:disabled{opacity:.35}
+.screen{position:relative;background:var(--wall);border:6px solid #111827;border-radius:10px;min-height:300px;padding:14px;box-shadow:inset 0 0 40px rgba(0,0,0,.6)}
+.screen .stitle{font-weight:800;font-size:18px;color:var(--gold);margin-bottom:2px}
+.screen .scap{font-size:14px;color:var(--muted);margin-bottom:10px}
+.screen svg{width:100%;height:auto;display:block}
+.screen .exnote{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#1a1405;background:var(--teal);padding:2px 8px;border-radius:10px}
+.screen .empty{color:var(--muted);display:grid;place-items:center;min-height:260px;text-align:center}
+.startover{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,17,32,.55);border-radius:18px;z-index:5}
+.startover.on{display:flex}
+.under{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.under .cbtn{width:100%;padding:10px}
+.under #defBtn{background:rgba(232,196,120,.12);border-color:var(--gold2);color:var(--gold)}
+.defs{background:var(--wall);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:10px}
+.defs dl{margin:0}.defs dt{font-weight:800;color:var(--gold);margin-top:6px}.defs dd{margin:2px 0 0;font-size:14.5px;color:#dbe3ef}
+
+/* wall diagrams (HTML kinds) */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp .col{background:#111b30;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.cmp .col h5{margin:0 0 6px;font-size:15.5px}
+.cmp .col.L h5{color:var(--teal)}.cmp .col.R h5{color:var(--coral)}
+.cmp ul{margin:0;padding-left:18px}.cmp li{font-size:14px;margin:4px 0}
+.cmp .col.win{box-shadow:0 0 0 2px var(--gold)}
+.eq{font-size:clamp(17px,2.2vw,22px);font-weight:800;text-align:center;padding:14px 10px;background:#111b30;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;color:#fff}
+.exrows{display:grid;gap:6px}
+.exrow{display:flex;justify-content:space-between;gap:10px;background:#111b30;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:15px}
+.exrow:last-child{border-color:var(--gold);color:var(--gold);font-weight:800}
+.pts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.pt{background:#111b30;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.pt .i{font-size:22px}.pt b{display:block;font-size:15px;margin:2px 0}.pt span{font-size:13.5px;color:#cbd5e3}
+@media(max-width:560px){.cmp{grid-template-columns:1fr}}
+
+/* Brief the Board */
+.brief{background:var(--panel2);border:1px solid var(--line);border-radius:14px;margin:4px 0 14px}
+.brief>summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.brief>summary::-webkit-details-marker{display:none}
+.brief>summary small{color:var(--muted);font-weight:600;font-size:13px}
+.brief>summary .tag{font-size:12.5px;background:rgba(95,196,184,.15);color:var(--teal);border:1px solid rgba(95,196,184,.4);padding:3px 9px;border-radius:20px;white-space:nowrap}
+.brief .in{padding:2px 14px 14px}
+.bsec{font-size:12.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
+.bq{margin:8px 0}
+.bq>label{display:block;font-weight:700;font-size:14.5px;margin-bottom:5px}
+.bq>label small{color:var(--muted);font-weight:500}
+.bq select,.bq textarea,.rv textarea,.rv input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15.5px;padding:10px 12px;font-family:inherit}
+.bq textarea{min-height:70px;resize:vertical}
+.bq .mini{margin-top:0}
+.bfoot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.rv{background:var(--bg);border:1px dashed var(--gold2);border-radius:12px;padding:12px;margin-top:14px}
+.rv h4{margin:0 0 2px;font-size:16px}
+.rv .rvb{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.rv textarea{min-height:120px;margin-top:6px}
+.rv .file{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0;font-size:14.5px}
+.rv .file button{background:none;border:0;color:#ffb4a8;font-weight:800;font-size:16px}
+.warn{font-size:12.5px;color:#f2c9a0;margin-top:6px}
+.briefcard{margin-top:8px;font-size:13px;color:#f2e3cc;background:rgba(0,0,0,.25);border:1px solid #6b4a2b;border-radius:10px;padding:6px 10px;display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.briefcard button{background:none;border:0;color:var(--gold);font-weight:700;font-size:13px;text-decoration:underline;padding:0}
+/* room controls */
+.moves{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
+.move{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:14.5px;padding:9px 13px;border-radius:12px}
+.move.on{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.move:disabled{opacity:.4;cursor:default}
+.clar{background:linear-gradient(135deg,#3b2615,#24170d);border:1px solid var(--gold2);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+.clar b{color:var(--gold)}
+.clar .qchip{margin:6px 6px 0 0}
+.jump .own textarea{min-height:110px;resize:vertical;font-size:16.5px}
+.jump .own{align-items:stretch}
+@media(max-width:560px){.jump .own{flex-wrap:wrap}.jump .own textarea{flex-basis:100%;order:-1}.jump .own .mic{height:50px;flex:none}.jump .own .go{flex:1;height:50px}}
+.jump{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:14px}
+.jump .lab{font-weight:800;font-size:16px;margin-bottom:2px}
+.jump .hint{color:var(--muted);font-size:14px;margin-bottom:8px}
+.targets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.act{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:15px;padding:10px 14px;border-radius:12px}
+.act.gold{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.act:disabled{opacity:.45;cursor:default}
+.prompts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.log{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.log summary{font-weight:700;cursor:pointer}
+.log .row{font-size:14.5px;margin:8px 0;line-height:1.5}
+.log .row b{color:var(--gold)}
+.log .row.u b{color:var(--teal)}
+.adjourn{background:linear-gradient(135deg,#3b2615,#24170d);border:1px solid #6b4a2b;border-radius:16px;padding:16px 18px;margin-top:14px}
+.adjourn h3{font-family:'Playfair Display',Georgia,serif;font-size:22px;color:var(--gold)}
+.adjourn ul{margin:8px 0;padding-left:20px}.adjourn li{margin:4px 0}
+.adjourn .lesson{background:rgba(0,0,0,.25);border-left:4px solid var(--gold);padding:10px 12px;border-radius:8px;font-weight:700;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <div class="mark">🏛️</div>
+      <div><h1>THE <span>BOARDROOM</span></h1><small>Executive briefings, board meetings and business know-how.</small></div>
+    </div>
+    <div class="topr">
+      <div class="seg" role="group" aria-label="Level">
+        <button id="lvStarter" type="button">🌱 Starter</button>
+        <button id="lvExec" type="button">🎓 Executive</button>
+      </div>
+      <button class="pill danger hide" id="stopBtn" type="button">✕ Stop / Start Over</button>
+    </div>
+  </header>
+
+  <div class="banner" aria-hidden="true">
+    <img src="board1.png" alt=""><img src="board4.png" alt=""><img src="board5.png" alt=""><img src="board8.png" alt=""><img src="board9.png" alt=""><img src="board12.png" alt="">
+    <div class="shade"></div>
+    <div class="txt"><b>Take a seat at the table.</b><span>An MBA-style experience. No tuition required.</span></div>
+  </div>
+
+  <!-- ===== SETUP ===== -->
+  <section id="setup">
+    <div class="step">
+      <h2><b>1</b>Choose your table</h2>
+      <p class="sub">Each table has three seats. Pick a table, then a room.</p>
+      <div class="tables">
+        <button class="tcard" id="tCorp" type="button">
+          <div class="faces3"><img src="board1.png" alt="CEO"><img src="board4.png" alt="CFO"><img src="board5.png" alt="COO"></div>
+          <h3>🏢 Corporate Table</h3>
+          <p>CEO · CFO · COO. How companies set strategy, manage money and run the operation.</p>
+        </button>
+        <button class="tcard" id="tMain" type="button">
+          <div class="faces3"><img src="board8.png" alt="Growth Advisor"><img src="board9.png" alt="Exit Planner"><img src="board11.png" alt="Personal Financial Advisor"></div>
+          <h3>🏪 Main Street Table</h3>
+          <p>Growth Advisor · Exit Planner · Personal Financial Advisor. Small business and your own money.</p>
+        </button>
+      </div>
+    </div>
+
+    <div class="step">
+      <h2><b>2</b>Choose a room</h2>
+      <div class="rooms">
+        <button class="rcard" data-room="briefing" type="button"><div class="ic">🎤</div><b>Executive Briefing</b><small>One executive presents a topic with diagrams on the wall screen.</small></button>
+        <button class="rcard" data-room="meeting" type="button"><div class="ic">🗣️</div><b>The Meeting</b><small>Two or three executives talk it through. Jump in anytime.</small></button>
+        <button class="rcard" data-room="ask" type="button"><div class="ic">✋</div><b>Ask the Room</b><small>Ask any business question. The right executive takes it.</small></button>
+        <button class="rcard" data-room="glossary" type="button"><div class="ic">📖</div><b>The Executive Glossary</b><small>Business terms in plain English, with formulas and examples.</small></button>
+      </div>
+    </div>
+
+    <div class="step hide" id="step3">
+      <h2><b>3</b><span id="s3title">Set up the room</span></h2>
+      <p class="sub" id="s3sub"></p>
+
+      <!-- seats (briefing / meeting / ask) -->
+      <div id="seatWrap">
+        <div class="seats" id="seats"></div>
+      </div>
+
+      <!-- Brief the Board (optional background + review) -->
+      <details class="brief" id="briefBox">
+        <summary><span>📋 Brief the Board <small>(optional) Tell the room about you, or have it review something</small></span><span class="tag hide" id="briefTag">✓ Brief ready</span></summary>
+        <div class="in">
+          <div class="note" style="margin-top:0">Skip this and the board uses a made-up example. Fill in what you like; everything is optional.</div>
+          <div id="briefFields"></div>
+          <div class="bq"><label for="bChallenge">Biggest challenge right now <small>(optional)</small></label><div class="own"><textarea id="bChallenge" maxlength="400"></textarea><button class="mic" id="micChallenge" type="button" title="Talk">🎤</button></div></div>
+          <div class="bq"><label for="bExtra">Anything else the board should know <small>(optional)</small></label><div class="own"><textarea id="bExtra" maxlength="1200"></textarea><button class="mic" id="micExtra" type="button" title="Talk">🎤</button></div></div>
+          <div class="bfoot"><button class="pill" id="briefClear" type="button">↺ Clear my brief</button><span class="note" style="margin:0">Used for this visit only, in every room.</span></div>
+
+          <div class="rv" id="reviewBox">
+            <h4>📎 Please review this</h4>
+            <div class="note" style="margin:0">Attach a document or paste something, and the board reviews it from their own seats.</div>
+            <div class="rvb">
+              <button class="pill" id="rvFile" type="button">📄 Attach a file (PDF, Word, text, CSV)</button>
+              <button class="pill" id="rvPhoto" type="button">📸 Photo or screenshot</button>
+              <button class="pill" id="rvPaste" type="button">📋 Paste text</button>
+            </div>
+            <input type="file" id="rvFileIn" class="hide" accept=".pdf,.docx,.txt,.md,.csv,application/pdf,text/plain,text/csv,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+            <input type="file" id="rvImgIn" class="hide" accept="image/*">
+            <div id="rvFileShow"></div>
+            <textarea id="rvText" class="hide" maxlength="60000" aria-label="Paste the text to review"></textarea>
+            <div class="bq" style="margin-bottom:0"><label for="rvNote">What should the board look at? <small>(optional), like "Is our pricing right?"</small></label><div class="own"><input id="rvNote" maxlength="300" autocomplete="off"><button class="go" id="rvGo" type="button">Review it ▶</button></div></div>
+            <div class="warn">🔒 Read for this session only and never saved. Please don't include account numbers, Social Security numbers or passwords.</div>
+            <div class="status" id="sRv"></div>
+          </div>
+        </div>
+      </details>
+
+      <!-- topics (briefing / meeting) -->
+      <div id="topicWrap">
+        <div class="boxlab" style="font-weight:700;color:var(--ink)">Pick a topic</div>
+        <div class="cats" id="cats"></div>
+        <div class="qs" id="qs"></div>
+        <div class="boxlab">✏️ Or choose your own topic, like "Should we raise prices this year?"</div>
+        <div class="own"><input id="ownTopic" maxlength="300" autocomplete="off" aria-label="Your own topic"><button class="mic" id="micTopic" type="button" title="Talk">🎤</button></div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="go big" id="startBtn" type="button">Start the meeting ▶</button>
+          <span class="status" id="s3"></span>
+        </div>
+      </div>
+
+      <!-- ask the room -->
+      <div id="askWrap" class="hide">
+        <div class="boxlab">✋ Ask the room anything about business or money, like "Why do profitable companies run out of cash?"</div>
+        <div class="own"><input id="askIn" maxlength="600" autocomplete="off" aria-label="Your question for the room"><button class="mic" id="micAsk" type="button" title="Talk">🎤</button><button class="go" id="askGo" type="button">Ask ▶</button></div>
+        <div class="qs" id="askIdeas" style="margin-top:10px"></div>
+        <span class="status" id="sAsk"></span>
+      </div>
+
+      <!-- glossary -->
+      <div id="glossWrap" class="hide">
+        <div class="boxlab">🔎 Search for a term, like "EBITDA" or "compound interest"</div>
+        <div class="gtools"><input id="gSearch" maxlength="80" autocomplete="off" aria-label="Search the glossary"><button class="go" id="gLook" type="button">Look it up</button></div>
+        <div class="cats" id="gDoors"></div>
+        <div class="status" id="sGloss"></div>
+        <div class="ggrid" id="gGrid"></div>
+      </div>
+
+      <p class="note hide" id="mainNote">📌 <b>The Main Street Table is for learning, not financial, legal or tax advice.</b> For your own situation, talk with a licensed professional.</p>
+    </div>
+
+    <!-- Mr. Paul, the Chair (cartoon drawn in code) -->
+    <div class="mphost" role="note" aria-label="Mr. Paul says: The meeting will come to order. Let's learn something!"><div class="mpfig"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" class="mph-svg" aria-hidden="true"><defs><linearGradient id="mph-skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d2bb"></stop><stop offset="1" stop-color="#eebc9f"></stop></linearGradient><linearGradient id="mph-coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"></stop><stop offset="1" stop-color="#e6ecf2"></stop></linearGradient><linearGradient id="mph-lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8dde0" stop-opacity=".45"></stop><stop offset="1" stop-color="#aeb6bc" stop-opacity=".3"></stop></linearGradient><linearGradient id="mph-glens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f6ff"></stop><stop offset=".6" stop-color="#a9d8f2"></stop><stop offset="1" stop-color="#7fbfe3"></stop></linearGradient></defs><path d="M34 380 C38 316 74 288 120 280 L160 300 L200 280 C246 288 282 316 286 380 Z" fill="#1f3157" stroke="#0c1424" stroke-width="3"></path><path d="M126 282 L160 300 L194 282 L184 380 L136 380 Z" fill="#f8fafc"></path><path d="M120 280 L160 300 L148 330 L140 380 L112 380 Z" fill="#26395f" stroke="#0c1424" stroke-width="2.5"></path><path d="M200 280 L160 300 L172 330 L180 380 L208 380 Z" fill="#26395f" stroke="#0c1424" stroke-width="2.5"></path><path d="M150 300 L170 300 L166 312 L174 366 L160 380 L146 366 L154 312 Z" fill="#b3263a" stroke="#6d1422" stroke-width="2"></path><path d="M206 318 L226 316 L224 324 L208 326 Z" fill="#e8c478"></path><rect x="66" y="336" width="58" height="22" rx="4" fill="#e8c478"></rect><text x="95" y="351.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1a1405">Chair</text><!-- neck --><path d="M134 240 L136 290 Q160 304 184 290 L186 240 Z" fill="#e8b294"></path><!-- side hair (behind head), soft and fluffy --><g fill="#dedad2"><ellipse cx="82" cy="130" rx="14" ry="22"></ellipse><ellipse cx="78" cy="152" rx="18" ry="30"></ellipse><ellipse cx="76" cy="182" rx="14" ry="24"></ellipse><ellipse cx="88" cy="206" rx="12" ry="16"></ellipse><ellipse cx="238" cy="130" rx="14" ry="22"></ellipse><ellipse cx="242" cy="152" rx="18" ry="30"></ellipse><ellipse cx="244" cy="182" rx="14" ry="24"></ellipse><ellipse cx="232" cy="206" rx="12" ry="16"></ellipse></g><g stroke="#c2bdb3" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M70 132 C64 150 64 170 70 190"></path><path d="M78 140 C74 160 74 184 82 206"></path><path d="M66 124 C62 118 60 112 61 106"></path><path d="M250 132 C256 150 256 170 250 190"></path><path d="M242 140 C246 160 246 184 238 206"></path><path d="M254 124 C258 118 260 112 259 106"></path></g><!-- ears --><ellipse cx="82" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><ellipse cx="238" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><path d="M84 158 Q78 168 85 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><path d="M236 158 Q242 168 235 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><!-- head --><path d="M160 42 C216 42 240 86 240 142 C240 210 214 254 160 254 C106 254 80 210 80 142 C80 86 104 42 160 42 Z" fill="url(#mph-skin)"></path><!-- thinning hair on top --><path d="M90 118 C88 74 116 46 160 44 C204 46 232 74 230 118 C222 96 206 82 186 80 C176 70 146 70 134 80 C114 82 98 96 90 118 Z" fill="#d6d1c8"></path><g stroke="#b3ada2" stroke-width="2" fill="none" stroke-linecap="round"><path d="M110 84 C122 62 140 52 160 50"></path><path d="M122 78 C134 62 150 56 166 56"></path><path d="M210 84 C198 62 180 52 160 50"></path><path d="M198 78 C186 62 170 56 154 58"></path><path d="M96 106 C100 90 108 80 120 72"></path><path d="M224 106 C220 90 212 80 200 72"></path><path d="M146 72 C150 64 158 60 166 62"></path><path d="M160 70 C164 62 172 58 180 60"></path></g><ellipse cx="160" cy="58" rx="22" ry="7" fill="#fff" opacity=".22"></ellipse><g><path d="M108 136 Q126 126 146 132" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path><path d="M174 132 Q194 126 212 136" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path></g><!-- eyes --><ellipse cx="128" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><ellipse cx="192" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><circle cx="129" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="193" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="129" cy="158" r="2.6" fill="#22262b"></circle><circle cx="193" cy="158" r="2.6" fill="#22262b"></circle><circle cx="131" cy="156" r="1.4" fill="#fff"></circle><circle cx="195" cy="156" r="1.4" fill="#fff"></circle><!-- smile crinkles --><path d="M112 164 Q118 170 126 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M208 164 Q202 170 194 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><!-- glasses: dark grey translucent rectangular frames --><rect x="100" y="138" width="56" height="40" rx="8" fill="url(#mph-lens)" stroke="#555b63" stroke-width="6"></rect><rect x="164" y="138" width="56" height="40" rx="8" fill="url(#mph-lens)" stroke="#555b63" stroke-width="6"></rect><path d="M156 152 Q160 148 164 152" stroke="#555b63" stroke-width="5" fill="none"></path><path d="M100 148 L84 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><path d="M220 148 L236 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><circle cx="104" cy="142" r="2" fill="#9aa1a9"></circle><circle cx="216" cy="142" r="2" fill="#9aa1a9"></circle><!-- nose --><path d="M160 168 C156 186 150 196 152 202 C156 208 166 208 170 202" stroke="#cf957a" stroke-width="3.5" fill="none" stroke-linecap="round"></path><!-- rosy cheeks --><ellipse cx="114" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><ellipse cx="206" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><!-- light stubble around mouth and chin --><path d="M122 212 C128 244 192 244 198 212 C198 234 184 252 160 252 C136 252 122 234 122 212 Z" fill="#c9b6a6" opacity=".22"></path><g><path d="M136 220 Q160 236 184 220" stroke="#b5635a" stroke-width="4.5" fill="none" stroke-linecap="round"></path><path d="M132 218 Q134 222 137 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M188 218 Q186 222 183 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path></g></svg></svg></div><div class="mpbub">The meeting will come to order. Let's learn something!</div></div>
+    <p class="foot">How it works: pick a table and a room, then press Start. Diagrams and voices can take a few seconds to appear, so hang in there. Example numbers on the wall screen are made up for teaching. The Boardroom is for learning and isn't financial, legal or tax advice.</p>
+  </section>
+
+  <!-- ===== THE ROOM ===== -->
+  <section id="room" class="hide">
+    <div class="agenda">
+      <div><div class="k" id="agKind">Agenda</div><h2 id="agTitle"></h2><div class="q" id="agQ"></div><div class="briefcard hide" id="briefCard"></div></div>
+      <div class="badges" id="agBadges"></div>
+    </div>
+
+    <div class="roomgrid">
+      <div class="tablebox">
+        <div class="people" id="people"></div>
+        <div class="thinking" id="thinking"><div class="dots"><span></span><span></span><span></span></div><span id="thinkMsg">The room is thinking…</span></div>
+        <div class="caption" id="caption"><span class="ph">The conversation will appear here.</span></div>
+        <div class="ctrls">
+          <button class="cbtn" id="replayBtn" type="button" disabled>⏮ Replay</button>
+          <button class="cbtn" id="muteBtn" type="button" aria-pressed="false">🔇 Mute</button>
+          <label class="rategrp">Voice speed <input type="range" id="rate" min="0.75" max="1.3" step="0.05" value="1"> <span id="rateVal">1×</span></label>
+        </div>
+      </div>
+
+      <div class="wallbox">
+        <div class="wallhead"><h3>📺 The wall screen</h3><div class="pager"><button id="pPrev" type="button" aria-label="Previous diagram" disabled>‹</button><span id="pNum"></span><button id="pNext" type="button" aria-label="Next diagram" disabled>›</button></div></div>
+        <div class="screen" id="screen">
+          <div class="empty">📊 Diagrams will appear here.</div>
+        </div>
+        <div class="under">
+          <button class="cbtn" id="pauseBtn" type="button" disabled>⏸ Pause Audio</button>
+          <button class="cbtn" id="contBtn" type="button" disabled>▶ Continue Audio</button>
+          <button class="cbtn" id="defBtn" type="button">📘 Expand Definitions</button>
+        </div>
+        <div class="defs hide" id="defs"></div>
+        <div class="startover" id="startLayer"></div>
+      </div>
+    </div>
+
+    <div class="jump" id="jump">
+      <div class="moves" id="moves"></div>
+      <div class="clar hide" id="clar"></div>
+      <div class="lab" id="jLab">Your turn</div>
+      <div class="hint" id="jHint">Ask a question or make a point. Type, or tap 🎤 and talk.</div>
+      <div class="targets" id="targets"></div>
+      <div class="own"><button class="mic" id="micJump" type="button" title="Talk">🎤</button><textarea id="jumpIn" rows="4" maxlength="1200" aria-label="Your question, answer or point"></textarea><button class="go" id="jumpGo" type="button">Send ➤</button></div>
+      <div class="prompts" id="prompts"></div>
+      <div class="acts" id="acts"></div>
+    </div>
+
+    <div class="adjourn hide" id="adjourn"></div>
+
+    <details class="log" id="log"><summary>📝 Transcript (everything said)</summary><div id="logBody"></div></details>
+    <p class="foot">Example numbers on the wall screen are made up for teaching. The Boardroom is for learning and isn't financial, legal or tax advice.</p>
+  </section>
+</div>
+
+<script>
+// ===================== DATA =====================
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const store = { get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : v; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} } };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const ROLES = {
+  ceo:   { name:"CEO", long:"Chief Executive Officer", table:"corporate", job:"Sets direction and makes the big calls." },
+  cfo:   { name:"CFO", long:"Chief Financial Officer", table:"corporate", job:"Guards the money: cash, margins, risk and returns." },
+  coo:   { name:"COO", long:"Chief Operating Officer", table:"corporate", job:"Runs the operation: people, process and execution." },
+  growth:{ name:"Growth Advisor", long:"Growth Advisor", table:"mainstreet", job:"Growing the business, buying another company, mergers." },
+  exit:  { name:"Exit Planner", long:"Exit Planner", table:"mainstreet", job:"What the business is worth, getting ready to sell, succession and life after the sale." },
+  pfa:   { name:"Personal Financial Advisor", long:"Personal Financial Advisor", table:"mainstreet", job:"Saving, investing basics, retirement and the owner's own money." }
+};
+const SEATS = { corporate:["ceo","cfo","coo"], mainstreet:["growth","exit","pfa"] };
+const PERSONAS = [
+  { k:"steady", label:"Steady", tip:"Cautious, protects cash, asks “what could go wrong?”" },
+  { k:"bold", label:"Bold", tip:"Growth-minded, takes smart risks, asks “what if we go bigger?”" },
+  { k:"numbers", label:"By the Numbers", tip:"Data-first, asks “show me the proof.”" },
+  { k:"bigpicture", label:"Big Picture", tip:"Vision and long-term thinking." }
+];
+
+const TOPICS = {
+  corporate: [
+    { c:"Business 101", q:["What does a COO actually do all day?","How does a company actually make money?","What's the difference between revenue and profit?"] },
+    { c:"Strategy & Direction", q:["New market, or go deeper in the one we're in?","How do companies decide what NOT to do?","Build it ourselves, buy it, or partner?"] },
+    { c:"Growth vs. Profit", q:["Chase revenue now, or protect margins?","When is it smart to lose money to grow?","How fast is too fast to grow?"] },
+    { c:"Priorities & Tradeoffs", q:["New equipment, more staff, or pay down debt?","How do you rank ten good ideas with budget for three?","Where should the next dollar go?"] },
+    { c:"Cash & the Numbers That Matter", q:["We're profitable, so why are we short on cash?","What's EBITDA and why does everyone quote it?","Which five numbers should a CEO check every week?"] },
+    { c:"Cost Savings & Efficiency", q:["Where is money quietly leaking out?","How do you cut costs without hurting the business?","Too many software subscriptions: how do you fix it?"] },
+    { c:"Pricing & Margins", q:["Raise prices, or risk losing customers?","Why do discounts hurt more than they look?","How do you know if your prices are too low?"] },
+    { c:"People & Leadership", q:["Do we need an FP&A team yet?","How do you keep your best people from leaving?","How should a company be organized as it grows?"] },
+    { c:"AI & the Future of Business", q:["Which jobs will AI change first, and how should we prepare?","How do you decide which AI projects are worth it?","Will AI make companies smaller or bigger?"] },
+    { c:"Risk & Tough Calls", q:["A recession is coming. What do we cut first?","How much cash should a company keep in reserve?","What do you do when your biggest customer leaves?"] }
+  ],
+  mainstreet: [
+    { c:"Small Business 101", q:["What's the difference between revenue and profit?","What's an LLC, in plain English?","How does money flow through a small shop?"] },
+    { c:"Growing the Business", q:["Second location, or make the first one better?","How do you know when to hire your first employee?","Add a new service, or sell more of what you have?"] },
+    { c:"Cutting Costs & Saving Money", q:["Where do most small businesses overspend?","Lease or buy equipment?","How do you cut costs without cutting quality?"] },
+    { c:"Keeping Customers Coming Back", q:["Why is keeping a customer cheaper than finding a new one?","What makes a customer loyal?","How do you win back a customer you lost?"] },
+    { c:"Tech & AI for Small Business", q:["What can AI realistically do for a five-person business?","Which tools should a small business pay for first?","How do you avoid wasting money on tech?"] },
+    { c:"Buying & Merging", q:["Buy a competitor, or build from scratch?","What should you check before buying a business?","How do people pay for buying a business?"] },
+    { c:"What's My Business Worth?", q:["Why would two similar businesses sell for different prices?","What's a multiple, and how does it work?","What makes a buyer pay more?"] },
+    { c:"Exit & Succession", q:["Sell to an outside buyer, or hand it to my kids?","How many years ahead should you plan an exit?","What happens to employees when a business sells?"] },
+    { c:"The Owner's Money", q:["Do I put profit back in the business or in my pocket?","How should a business owner plan for retirement?","Why keep business and personal money separate?"] },
+    { c:"Personal Finance Basics", q:["What's the difference between principal and interest?","How does compound interest work?","What's a credit score, and why does it matter?"] }
+  ]
+};
+const ASK_IDEAS = {
+  corporate:["Why do profitable companies run out of cash?","What's the difference between a CFO and a controller?","How does a company decide to lay people off?","What is a board of directors for?"],
+  mainstreet:["How do I figure out what my business is worth?","Is it better to lease or buy a work truck?","How much should I keep in an emergency fund?","What's the difference between a Roth and a traditional IRA?"]
+};
+
+// The Executive Glossary (built in; accurate, plain-English cards). w = who watches it most.
+const GLOSS = [
+  // Economics
+  { t:"Supply and Demand", d:"Prices rise when buyers want more of something than sellers have, and fall when sellers have more than buyers want.", f:"", e:"Example: a hot holiday toy sells out at $30, so resellers ask $60 until stores restock.", w:"ceo", s:"If everyone wants the last cupcake, it can cost more. If there are tons of cupcakes, prices drop.", door:"Economics" },
+  { t:"Inflation", d:"The general rise in prices over time, which means each dollar buys a little less.", f:"Inflation rate = (Price index now − Price index a year ago) ÷ Price index a year ago × 100", e:"Example: a cart that cost $100 last year costs $103 now, so prices rose about 3%.", w:"cfo", s:"When the same snack costs more than it used to, that's inflation.", door:"Economics" },
+  { t:"Interest Rate", d:"The price of borrowing money, shown as a yearly percentage of the amount borrowed.", f:"Simple interest = Principal × Rate × Years", e:"Example: borrowing $10,000 at 6% for one year costs $600 in interest.", w:"cfo", s:"It's the rent you pay to use someone else's money.", door:"Economics" },
+  { t:"Recession", d:"A significant, widespread drop in economic activity that lasts more than a few months, usually with falling output, jobs and spending.", f:"", e:"Example: customers delay big purchases, so a furniture maker sees orders fall for several months.", w:"ceo", s:"A stretch when lots of businesses sell less and some people lose jobs.", door:"Economics" },
+  { t:"GDP (Gross Domestic Product)", d:"The total value of all finished goods and services produced in a country in a period. It's the main scorecard for an economy's size.", f:"GDP = Consumer spending + Business investment + Government spending + (Exports − Imports)", e:"", w:"ceo", s:"Add up everything a country makes and sells in a year. That's GDP.", door:"Economics" },
+  { t:"Opportunity Cost", d:"The value of the best option you give up when you choose something else.", f:"", e:"Example: spending $50,000 on a new van means not spending it on two months of a new hire.", w:"cfo", s:"If you spend your Saturday at the movies, you give up the baseball game. That's the cost.", door:"Economics" },
+  { t:"Economies of Scale", d:"Cost advantages a business gets as it grows, because fixed costs spread over more units and it can buy in bulk.", f:"Cost per unit = Total costs ÷ Units produced", e:"Example: a $10,000 machine spread over 1,000 units is $10 each; over 10,000 units, $1 each.", w:"coo", s:"Making 100 cookies at once is cheaper per cookie than making them one at a time.", door:"Economics" },
+  { t:"Market Share", d:"A company's slice of all the sales in its market.", f:"Market share = Company sales ÷ Total market sales × 100", e:"Example: $5 million of sales in a $50 million market is a 10% market share.", w:"ceo", s:"If 10 kids buy lemonade and 3 buy from you, you have 30% of the market.", door:"Economics" },
+  // Money Basics
+  { t:"Revenue", d:"All the money a business brings in from selling its products or services, before any costs come out. Also called sales or the top line.", f:"Revenue = Price × Units sold", e:"Example: 2,000 haircuts at $30 = $60,000 of revenue.", w:"ceo", s:"Every dollar customers pay you, before you pay for anything.", door:"Money Basics" },
+  { t:"Expenses", d:"The costs of running the business, like materials, wages, rent, software and insurance.", f:"", e:"", w:"cfo", s:"Everything you have to pay for to keep the business going.", door:"Money Basics" },
+  { t:"Profit", d:"What's left after expenses are subtracted from revenue. There are several levels: gross profit, operating profit and net profit.", f:"Profit = Revenue − Expenses", e:"Example: $60,000 of revenue − $45,000 of expenses = $15,000 profit.", w:"cfo", s:"The money you get to keep after paying for everything.", door:"Money Basics" },
+  { t:"Income Statement (P&L)", d:"A report showing revenue, expenses and profit over a period, like a month, quarter or year. P&L stands for profit and loss.", f:"", e:"", w:"cfo", s:"A report card for money in and money out over a set time.", door:"Money Basics" },
+  { t:"Balance Sheet", d:"A snapshot of what a company owns (assets), what it owes (liabilities) and what's left for the owners (equity) on one date.", f:"Assets = Liabilities + Equity", e:"Example: $500,000 of assets and $300,000 of debts leaves $200,000 of equity.", w:"cfo", s:"A photo of everything you own and everything you owe, on one day.", door:"Money Basics" },
+  { t:"Assets", d:"Things a business owns that have value, like cash, inventory, equipment, buildings and money customers owe it.", f:"", e:"", w:"cfo", s:"Stuff you own that's worth money.", door:"Money Basics" },
+  { t:"Liabilities", d:"What a business owes others, like loans, unpaid bills to suppliers and taxes due.", f:"", e:"", w:"cfo", s:"Money you owe somebody.", door:"Money Basics" },
+  { t:"Equity", d:"The owners' share of the business: what would be left if all assets were sold and all debts were paid.", f:"Equity = Assets − Liabilities", e:"", w:"cfo", s:"The part of the business that's truly yours after paying back what you owe.", door:"Money Basics" },
+  { t:"Debt-to-Equity Ratio", d:"Compares how much a company is funded by borrowing versus by owners. Higher means more reliance on debt and more risk.", f:"Debt-to-equity = Total debt ÷ Shareholders' equity", e:"Example: $400,000 of debt ÷ $800,000 of equity = 0.5.", w:"cfo", s:"How much of the business is paid for with borrowed money compared with your own money.", door:"Money Basics" },
+  // Profit & Margins
+  { t:"Cost of Goods Sold (COGS)", d:"The direct costs of making or delivering what you sold, like materials and the labor that makes the product.", f:"", e:"Example: for a bakery, flour, butter and baker wages are COGS; the accountant's fee is not.", w:"coo", s:"What it costs to make the things you sold.", door:"Profit & Margins" },
+  { t:"Gross Profit", d:"Revenue minus the direct costs of what was sold. It shows how much each sale leaves to cover everything else.", f:"Gross profit = Revenue − Cost of goods sold", e:"Example: $100,000 of revenue − $40,000 COGS = $60,000 gross profit.", w:"cfo", s:"Sell a cupcake for $3 that cost $1 to make, and you have $2 of gross profit.", door:"Profit & Margins" },
+  { t:"Gross Margin", d:"Gross profit as a percentage of revenue. It shows how much of each sales dollar is left after direct costs.", f:"Gross margin % = Gross profit ÷ Revenue × 100", e:"Example: $60,000 ÷ $100,000 = 60% gross margin.", w:"cfo", s:"Out of every dollar you sell, how many cents are left after making the product.", door:"Profit & Margins" },
+  { t:"Contribution Margin", d:"Revenue minus variable costs (costs that rise with each sale). It's what each sale contributes toward fixed costs and profit.", f:"Contribution margin = Revenue − Variable costs", e:"Example: a $50 item with $20 of variable cost contributes $30.", w:"cfo", s:"How much each sale chips in to help pay the rent and other bills.", door:"Profit & Margins" },
+  { t:"SG&A", d:"Selling, General and Administrative expenses: selling costs like sales pay, commissions and advertising, plus overhead like office rent, HR, finance and legal.", f:"SG&A as % of revenue = SG&A ÷ Revenue × 100", e:"Example: $2 million of SG&A on $10 million of revenue is 20%.", w:"cfo", s:"The costs of selling and running the office, not making the product.", door:"Profit & Margins" },
+  { t:"Operating Profit (EBIT)", d:"Profit from the core business before interest and taxes. Earnings Before Interest and Taxes.", f:"EBIT = Revenue − Cost of goods sold − Operating expenses", e:"Example: $100,000 − $40,000 − $35,000 = $25,000 of operating profit.", w:"cfo", s:"What the business itself earns before paying the bank and the government.", door:"Profit & Margins" },
+  { t:"EBITDA", d:"Earnings Before Interest, Taxes, Depreciation and Amortization. A popular way to compare how much cash-like profit the core business produces.", f:"EBITDA = Operating profit (EBIT) + Depreciation + Amortization", e:"Example: $25,000 EBIT + $5,000 depreciation = $30,000 EBITDA.", w:"cfo", s:"Profit from the main business, before some accounting and money costs are taken out.", door:"Profit & Margins" },
+  { t:"Net Profit", d:"The bottom line: what's left after every expense, including interest and taxes.", f:"Net profit margin % = Net profit ÷ Revenue × 100", e:"Example: $8,000 net profit on $100,000 of revenue is an 8% net margin.", w:"cfo", s:"The money left at the very end, after paying for absolutely everything.", door:"Profit & Margins" },
+  { t:"Break-Even Point", d:"The sales level where revenue exactly covers all costs, so profit is zero. Above it, the business makes money.", f:"Break-even units = Fixed costs ÷ (Price per unit − Variable cost per unit)", e:"Example: $30,000 fixed ÷ ($50 − $20) = 1,000 units to break even.", w:"cfo", s:"How many lemonades you must sell to pay back the cost of your stand.", door:"Profit & Margins" },
+  { t:"Operating Leverage", d:"How much profit swings when revenue changes. Businesses with high fixed costs have high operating leverage: once past break-even, profits grow fast, but they also fall fast when sales drop.", f:"Degree of operating leverage = % change in operating profit ÷ % change in revenue", e:"Example: revenue up 10% and operating profit up 30% means operating leverage of 3.", w:"cfo", s:"When most of your costs stay the same no matter what, every extra sale adds a lot of profit, and every lost sale hurts a lot.", door:"Profit & Margins" },
+  { t:"Unit Economics", d:"The revenue and costs tied to one unit, like one customer, product or order. It shows whether each sale actually makes money.", f:"Profit per unit = Revenue per unit − Variable cost per unit", e:"Example: a $40 meal kit with $28 of ingredients, packing and shipping earns $12 per box.", w:"cfo", s:"Do you make money on each single thing you sell?", door:"Profit & Margins" },
+  { t:"Price Realization", d:"The share of your list price you actually collect after discounts, rebates and deals.", f:"Price realization % = Actual price received ÷ List price × 100", e:"Example: a $100 list price that averages $88 after discounts is 88% price realization.", w:"cfo", s:"If the sticker says $10 but people usually pay $8, you only get 80% of your price.", door:"Profit & Margins" },
+  // Cash
+  { t:"Cash Flow", d:"The actual money moving into and out of the business over a period. A company can show a profit and still run short of cash.", f:"Net cash flow = Cash in − Cash out", e:"Example: you book a $20,000 sale in March, but the customer pays in May.", w:"cfo", s:"Money really coming into your pocket and really going out.", door:"Cash" },
+  { t:"Free Cash Flow", d:"Cash the business generates after paying for operations and investments in equipment and buildings. It's money available to repay debt, save or pay owners.", f:"Free cash flow = Operating cash flow − Capital expenditures", e:"Example: $150,000 operating cash flow − $50,000 for new equipment = $100,000.", w:"cfo", s:"The spare cash left after running the business and buying what it needs.", door:"Cash" },
+  { t:"Capital Expenditures (CapEx)", d:"Money spent on long-lasting assets like equipment, vehicles, buildings or major technology.", f:"", e:"Example: a landscaping company buys a $60,000 truck it will use for years.", w:"cfo", s:"Buying big things that last a long time, like a truck or an oven.", door:"Cash" },
+  { t:"Working Capital", d:"The cushion of short-term resources a business has to pay its short-term bills.", f:"Working capital = Current assets − Current liabilities", e:"Example: $250,000 of current assets − $150,000 of current liabilities = $100,000.", w:"cfo", s:"The money you have handy to pay this month's bills.", door:"Cash" },
+  { t:"Accounts Receivable", d:"Money customers owe the business for things already sold on credit.", f:"", e:"", w:"cfo", s:"IOUs from customers who haven't paid yet.", door:"Cash" },
+  { t:"Accounts Payable", d:"Money the business owes suppliers for things it already received.", f:"", e:"", w:"cfo", s:"Bills you still need to pay.", door:"Cash" },
+  { t:"Days Sales Outstanding (DSO)", d:"The average number of days it takes to collect payment after a sale.", f:"DSO = Accounts receivable ÷ Revenue for the period × Days in the period", e:"Example: $100,000 receivable ÷ $1,200,000 yearly revenue × 365 ≈ 30 days.", w:"cfo", s:"How long customers usually take to pay you.", door:"Cash" },
+  { t:"Cash Conversion Cycle", d:"How many days cash is tied up from paying for inventory to collecting from customers.", f:"Cash conversion cycle = Days inventory outstanding + Days sales outstanding − Days payables outstanding", e:"Example: 40 days of inventory + 30 days to collect − 25 days to pay suppliers = 45 days.", w:"coo", s:"How long your money is stuck between buying supplies and getting paid.", door:"Cash" },
+  { t:"Burn Rate", d:"How fast a company spends its cash, usually per month. Startups watch it closely.", f:"Net burn = Cash out per month − Cash in per month; Runway (months) = Cash ÷ Net burn", e:"Example: $600,000 in the bank with a $50,000 monthly net burn is 12 months of runway.", w:"cfo", s:"How fast your money pile is shrinking each month.", door:"Cash" },
+  // Valuation & Exits
+  { t:"Valuation", d:"An estimate of what a business is worth, often based on its earnings, cash flow, assets or what similar businesses sold for.", f:"", e:"", w:"exit", s:"Figuring out what someone would fairly pay for the whole business.", door:"Valuation & Exits" },
+  { t:"Earnings Multiple", d:"A valuation shortcut: the business's value divided by its earnings. Buyers pay higher multiples for steadier, faster-growing, less risky businesses.", f:"Value = Earnings × Multiple (for example, EV ÷ EBITDA)", e:"Example: $500,000 of yearly earnings at a 4× multiple = a $2 million value.", w:"exit", s:"If a business earns $1 a year and someone pays $4 for it, that's a 4× multiple.", door:"Valuation & Exits" },
+  { t:"Seller's Discretionary Earnings (SDE)", d:"A small-business earnings figure that adds back the owner's pay and perks, plus one-time and non-cash costs, to show what one full-time owner-operator really earns from the business.", f:"SDE = Pre-tax profit + Owner's pay and perks + One-time expenses + Interest + Depreciation and amortization", e:"Example: $120,000 profit + $90,000 owner pay + $10,000 one-time costs = $220,000 SDE.", w:"exit", s:"How much the business really makes for the owner who runs it.", door:"Valuation & Exits" },
+  { t:"Enterprise Value", d:"The total value of a company to a buyer: its equity value plus debt, minus cash.", f:"Enterprise value = Market capitalization + Debt − Cash", e:"Example: $10 million equity + $3 million debt − $1 million cash = $12 million.", w:"cfo", s:"The price tag for the whole company, including paying off its loans.", door:"Valuation & Exits" },
+  { t:"Due Diligence", d:"The buyer's deep check of a business before a sale closes: financials, contracts, customers, legal issues and operations.", f:"", e:"", w:"exit", s:"Looking under the hood before you buy the car.", door:"Valuation & Exits" },
+  { t:"Letter of Intent (LOI)", d:"A document where a buyer lays out the main terms of a proposed deal, like price and structure, before the final contract. Most terms are not yet binding.", f:"", e:"", w:"exit", s:"A written “we plan to buy, here's roughly how” before the real contract.", door:"Valuation & Exits" },
+  { t:"Earnout", d:"Part of a sale price paid later, only if the business hits agreed goals after the sale.", f:"", e:"Example: $2 million at closing plus up to $500,000 more if sales grow 10% in each of the next two years.", w:"exit", s:"You get some of the money later, if the business keeps doing well.", door:"Valuation & Exits" },
+  { t:"Succession Plan", d:"A plan for who will own and run the business when the owner steps away: family, employees, partners or an outside buyer.", f:"", e:"", w:"exit", s:"Deciding who takes over the business when you're done.", door:"Valuation & Exits" },
+  { t:"Recurring Revenue (MRR / ARR)", d:"Predictable revenue that repeats, like subscriptions or service contracts. MRR is monthly; ARR is annual. Buyers value it highly.", f:"ARR = MRR × 12", e:"Example: 400 customers paying $50 a month = $20,000 MRR, or $240,000 ARR.", w:"exit", s:"Money that comes in every month because customers keep subscribing.", door:"Valuation & Exits" },
+  { t:"Mergers & Acquisitions (M&A)", d:"Combining companies (a merger) or one company buying another (an acquisition).", f:"", e:"", w:"growth", s:"When one business buys or joins with another.", door:"Valuation & Exits" },
+  // Growth
+  { t:"Customer Acquisition Cost (CAC)", d:"The average sales and marketing cost to win one new customer.", f:"CAC = Sales and marketing spend ÷ New customers won", e:"Example: $20,000 spent to win 100 customers = $200 CAC.", w:"growth", s:"How much it costs to get one new customer.", door:"Growth" },
+  { t:"Customer Lifetime Value (CLV)", d:"The total gross profit a business expects from a customer over the whole relationship.", f:"CLV ≈ Average yearly revenue per customer × Gross margin % × Years as a customer", e:"Example: $1,000 a year × 50% margin × 4 years = $2,000.", w:"growth", s:"How much one happy customer is worth over all the years they shop with you.", door:"Growth" },
+  { t:"Churn Rate", d:"The share of customers (or recurring revenue) lost in a period.", f:"Churn % = Customers lost ÷ Customers at the start × 100", e:"Example: losing 5 of 200 customers in a month is 2.5% monthly churn.", w:"growth", s:"How many customers stop coming back.", door:"Growth" },
+  { t:"Net Revenue Retention (NRR)", d:"How much recurring revenue you keep from existing customers after upgrades, downgrades and cancellations. Over 100% means existing customers are growing.", f:"NRR = (Starting recurring revenue + Expansion − Contraction − Churn) ÷ Starting recurring revenue × 100", e:"Example: ($100,000 + $15,000 − $3,000 − $7,000) ÷ $100,000 = 105%.", w:"cfo", s:"Are your current customers spending more or less than last year?", door:"Growth" },
+  { t:"Return on Investment (ROI)", d:"How much you gained compared with what you spent.", f:"ROI % = (Gain − Cost) ÷ Cost × 100", e:"Example: spend $10,000, gain $15,000: ($15,000 − $10,000) ÷ $10,000 = 50% ROI.", w:"cfo", s:"Put in $1, get back $1.50, and you earned 50%.", door:"Growth" },
+  { t:"Moat", d:"A lasting advantage that protects a business from competitors, like a strong brand, lower costs, a network effect or customers who'd find it hard to switch.", f:"", e:"", w:"ceo", s:"Like a castle's moat, it's what keeps competitors from taking your customers.", door:"Growth" },
+  { t:"SWOT Analysis", d:"A simple planning tool that lists Strengths, Weaknesses, Opportunities and Threats.", f:"", e:"", w:"ceo", s:"Four boxes: what you're good at, not good at, chances ahead and dangers ahead.", door:"Growth" },
+  { t:"Total Addressable Market (TAM)", d:"The total yearly revenue available if a business won every possible customer in its market.", f:"TAM = Number of possible customers × Average yearly revenue per customer", e:"Example: 50,000 dental offices × $2,000 a year = a $100 million TAM.", w:"ceo", s:"How big the whole pie is, if you could sell to everybody.", door:"Growth" },
+  { t:"Win Rate", d:"The share of qualified sales opportunities that turn into closed deals.", f:"Win rate % = Deals won ÷ Qualified opportunities × 100", e:"Example: winning 15 of 60 qualified deals is a 25% win rate.", w:"ceo", s:"Out of every 4 serious tries, you win 1.", door:"Growth" },
+  { t:"Revenue Concentration", d:"How dependent a business is on a few customers. High concentration is risky, and buyers often value the business less.", f:"Top-customer share % = Revenue from the largest customer ÷ Total revenue × 100", e:"Example: one customer at $400,000 of $1 million in sales is 40%.", w:"exit", s:"If one big customer leaves, would the business be in trouble?", door:"Growth" },
+  // Operations
+  { t:"FP&A (Financial Planning & Analysis)", d:"The finance team that builds budgets and forecasts, explains results and helps leaders decide where to invest.", f:"", e:"", w:"cfo", s:"The people who plan the money and explain what happened to it.", door:"Operations" },
+  { t:"Budget Variance", d:"The difference between what was planned in the budget and what actually happened.", f:"Variance = Actual − Budget", e:"Example: a $50,000 budget and $56,000 actual spending is a $6,000 overspend.", w:"cfo", s:"How far off your plan was from what really happened.", door:"Operations" },
+  { t:"Forecast", d:"A best estimate of future results, updated as new information comes in.", f:"", e:"", w:"cfo", s:"A smart guess about what's coming, like a weather forecast for money.", door:"Operations" },
+  { t:"Overhead", d:"Ongoing costs to run the business that aren't tied to making a specific product, like rent, utilities, insurance and office staff.", f:"", e:"", w:"coo", s:"Bills you pay even if you don't sell anything today.", door:"Operations" },
+  { t:"KPI (Key Performance Indicator)", d:"A number a business tracks to see whether it's hitting an important goal.", f:"", e:"Example: on-time delivery %, gross margin, or customer churn.", w:"coo", s:"A scoreboard number that tells you if you're winning.", door:"Operations" },
+  { t:"Total Cost of Ownership (TCO)", d:"The full cost of something over its life, not just the purchase price: setup, maintenance, training, energy and disposal.", f:"TCO = Purchase price + Operating costs + Maintenance + Disposal costs", e:"Example: a $30,000 machine with $5,000 a year of upkeep over 5 years has a $55,000 TCO.", w:"coo", s:"What something really costs once you count everything, not just the price tag.", door:"Operations" },
+  { t:"Capacity Utilization", d:"How much of a business's possible output it's actually using.", f:"Capacity utilization % = Actual output ÷ Maximum possible output × 100", e:"Example: a plant that could make 10,000 units makes 7,500, so it's at 75%.", w:"coo", s:"If your oven can bake 12 pizzas and you bake 9, you're using 75% of it.", door:"Operations" },
+  // Personal Finance
+  { t:"Principal", d:"The original amount of money borrowed or invested, not counting interest.", f:"", e:"Example: on a $20,000 car loan, the principal is $20,000.", w:"pfa", s:"The amount you borrowed or saved to start with.", door:"Personal Finance" },
+  { t:"Interest", d:"The cost of borrowing money, or the money you earn when you save or lend it.", f:"Simple interest = Principal × Rate × Years", e:"Example: $1,000 saved at 4% earns $40 in a year.", w:"pfa", s:"Extra money paid for using someone's money, or earned for letting them use yours.", door:"Personal Finance" },
+  { t:"APR (Annual Percentage Rate)", d:"The yearly cost of a loan, including interest and many fees, so you can compare loans fairly.", f:"", e:"", w:"pfa", s:"The real yearly price tag of borrowing money.", door:"Personal Finance" },
+  { t:"Compound Interest", d:"Interest earned on both your original money and the interest it already earned, so savings grow faster over time.", f:"Future value = Principal × (1 + Rate)^Years (compounded yearly)", e:"Example: $1,000 at 5% for 10 years grows to about $1,629.", w:"pfa", s:"Your money earns money, then that money earns money too. It snowballs.", door:"Personal Finance" },
+  { t:"Credit Score", d:"A number, often 300 to 850, that tells lenders how reliably you've repaid debts. Higher scores usually mean better loan rates.", f:"", e:"", w:"pfa", s:"A grade that shows how good you are at paying back what you borrow.", door:"Personal Finance" },
+  { t:"Budget", d:"A plan for how money coming in will be spent, saved and invested.", f:"", e:"Example: one simple guideline is 50% needs, 30% wants, 20% savings.", w:"pfa", s:"A plan for your money before you spend it.", door:"Personal Finance" },
+  { t:"Emergency Fund", d:"Savings set aside for unexpected costs like a job loss or car repair. A common guideline is three to six months of essential expenses.", f:"", e:"Example: $3,000 of monthly essentials × 3 to 6 months = $9,000 to $18,000.", w:"pfa", s:"A rainy-day jar for surprise bills.", door:"Personal Finance" },
+  { t:"401(k)", d:"A workplace retirement savings plan in the U.S. Money goes in from your paycheck, often with tax benefits, and some employers add a match.", f:"", e:"", w:"pfa", s:"A savings account for when you're older, filled straight from your paycheck.", door:"Personal Finance" },
+  { t:"Diversification", d:"Spreading money across different investments so one bad result doesn't sink everything.", f:"", e:"", w:"pfa", s:"Don't put all your eggs in one basket.", door:"Personal Finance" },
+  { t:"Index Fund", d:"A fund that holds all, or a sample, of the investments in a market index, like the S&P 500, usually with low fees.", f:"", e:"", w:"pfa", s:"One basket that holds little pieces of lots of companies.", door:"Personal Finance" },
+  { t:"Net Worth", d:"What you own minus what you owe.", f:"Net worth = Assets − Liabilities", e:"Example: $300,000 of assets − $180,000 of debts = $120,000 net worth.", w:"pfa", s:"Add up everything you own, subtract what you owe.", door:"Personal Finance" }
+];
+const DOORS = ["Economics","Money Basics","Profit & Margins","Cash","Valuation & Exits","Growth","Operations","Personal Finance"];
+
+// ===================== STATE =====================
+const S = {
+  table: store.get("br_table", "corporate"),
+  room: null,
+  level: store.get("br_level", "executive"),
+  pref: (() => { try { return JSON.parse(store.get("br_pref", "")) || null; } catch(e){ return null; } })() || {
+    ceo:{g:"m",p:"bigpicture"}, cfo:{g:"f",p:"numbers"}, coo:{g:"m",p:"steady"},
+    growth:{g:"f",p:"bold"}, exit:{g:"m",p:"steady"}, pfa:{g:"m",p:"numbers"}
+  },
+  picked: { corporate:["ceo","cfo","coo"], mainstreet:["growth","exit","pfa"] },
+  briefRole: { corporate:"cfo", mainstreet:"exit" },
+  cat: 0,
+  // session
+  mode: null, topic:"", category:"", title:"", seats:[], history:[], rounds:0, busy:false, presenter:null,
+  screens:[], sIdx:0, started:false, beats:[], token:0, extraTerms:{}
+};
+function savePref(){ store.set("br_pref", JSON.stringify(S.pref)); }
+
+// ===================== SETUP UI =====================
+function setLevel(l){
+  S.level = l === "starter" ? "starter" : "executive"; store.set("br_level", S.level);
+  $("lvStarter").classList.toggle("on", S.level === "starter"); $("lvExec").classList.toggle("on", S.level !== "starter");
+  if (!$("glossWrap").classList.contains("hide")) paintGloss();
+}
+$("lvStarter").onclick = () => setLevel("starter");
+$("lvExec").onclick = () => setLevel("executive");
+
+function setTable(t){
+  S.table = t === "mainstreet" ? "mainstreet" : "corporate"; store.set("br_table", S.table);
+  $("tCorp").classList.toggle("on", S.table === "corporate"); $("tMain").classList.toggle("on", S.table === "mainstreet");
+  S.cat = 0;
+  if (S.room) paintStep3();
+}
+$("tCorp").onclick = () => setTable("corporate");
+$("tMain").onclick = () => setTable("mainstreet");
+document.querySelectorAll(".rcard").forEach(b => b.onclick = () => setRoom(b.dataset.room));
+function setRoom(r){
+  S.room = r;
+  document.querySelectorAll(".rcard").forEach(b => b.classList.toggle("on", b.dataset.room === r));
+  $("step3").classList.remove("hide");
+  paintStep3();
+  setTimeout(() => $("step3").scrollIntoView({ behavior:"smooth", block:"start" }), 60);
+}
+const PICS = { "ceo-m":"board1.png", "ceo-f":"board2.png", "cfo-m":"board3.png", "cfo-f":"board4.png", "coo-m":"board5.png", "coo-f":"board6.png", "growth-m":"board7.png", "growth-f":"board8.png", "exit-m":"board9.png", "exit-f":"board10.png", "pfa-m":"board11.png", "pfa-f":"board12.png" };
+const pic = (role, g) => PICS[`${role}-${g === "f" ? "f" : "m"}`];
+
+function paintStep3(){
+  const r = S.room, t = S.table;
+  $("mainNote").classList.toggle("hide", t !== "mainstreet");
+  $("seatWrap").classList.toggle("hide", r === "glossary");
+  $("topicWrap").classList.toggle("hide", !(r === "briefing" || r === "meeting"));
+  $("askWrap").classList.toggle("hide", r !== "ask");
+  $("glossWrap").classList.toggle("hide", r !== "glossary");
+  const tname = t === "corporate" ? "Corporate Table" : "Main Street Table";
+  if (r === "briefing") { $("s3title").textContent = "Pick your presenter and topic"; $("s3sub").textContent = `${tname}: tap one executive to present. Choose a voice (man or woman) and a personality.`; $("startBtn").textContent = "Start the briefing ▶"; }
+  if (r === "meeting") { $("s3title").textContent = "Seat the meeting and pick a topic"; $("s3sub").textContent = `${tname}: seat two or all three executives. Choose each one's voice and personality.`; $("startBtn").textContent = "Start the meeting ▶"; }
+  if (r === "ask") { $("s3title").textContent = "Ask the Room"; $("s3sub").textContent = `${tname}: the right executive takes your question. Set each voice and personality first if you like.`; }
+  if (r === "glossary") { $("s3title").textContent = "The Executive Glossary"; $("s3sub").textContent = "Search or browse by topic. Tap “Bring it to the Boardroom” and an executive explains it with diagrams."; }
+  $("briefBox").classList.toggle("hide", r === "glossary");
+  if (r !== "glossary") { paintSeats(); paintBrief(); }
+  if (r === "briefing" || r === "meeting") paintTopics();
+  if (r === "ask") $("askIdeas").innerHTML = ASK_IDEAS[t].map(q => `<button class="qchip" type="button">${esc(q)}</button>`).join("");
+  if (r === "ask") $("askIdeas").querySelectorAll(".qchip").forEach(b => b.onclick = () => { $("askIn").value = b.textContent; });
+  if (r === "glossary") paintGloss();
+}
+
+function paintSeats(){
+  const t = S.table, r = S.room;
+  $("seats").innerHTML = SEATS[t].map(role => {
+    const p = S.pref[role], R = ROLES[role];
+    const on = r === "briefing" ? S.briefRole[t] === role : r === "meeting" ? S.picked[t].includes(role) : true;
+    const mark = r === "briefing" ? (on ? "✓" : "") : r === "meeting" ? (on ? "✓" : "") : "";
+    return `<div class="seat ${on ? "on" : ""}" data-role="${role}">
+      <button class="pick" type="button" aria-pressed="${on}" ${r === "ask" ? "tabindex='-1'" : ""}>
+        <div class="ph"><img src="${pic(role, p.g)}" alt="${esc(R.long)}">${r !== "ask" ? `<div class="chk">${mark}</div>` : ""}</div>
+        <div class="nm">${esc(R.name)}</div><div class="jb">${esc(R.job)}</div>
+      </button>
+      <div class="mini"><span class="lab">Voice</span>
+        <button class="chip ${p.g === "m" ? "on" : ""}" data-g="m" type="button">👨 Man</button>
+        <button class="chip ${p.g === "f" ? "on" : ""}" data-g="f" type="button">👩 Woman</button>
+      </div>
+      <div class="mini"><span class="lab">Personality</span>
+        ${PERSONAS.map(x => `<button class="chip ${p.p === x.k ? "on" : ""}" data-p="${x.k}" title="${esc(x.tip)}" type="button">${esc(x.label)}</button>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+  $("seats").querySelectorAll(".seat").forEach(el => {
+    const role = el.dataset.role;
+    el.querySelector(".pick").onclick = () => {
+      if (S.room === "briefing") S.briefRole[S.table] = role;
+      else if (S.room === "meeting") {
+        const L = S.picked[S.table];
+        if (L.includes(role)) { if (L.length > 2) L.splice(L.indexOf(role), 1); else { $("s3").textContent = "A meeting needs at least two executives."; return; } }
+        else L.push(role);
+        L.sort((a, b) => SEATS[S.table].indexOf(a) - SEATS[S.table].indexOf(b));
+        $("s3").textContent = "";
+      }
+      paintSeats();
+    };
+    el.querySelectorAll("[data-g]").forEach(b => b.onclick = () => { S.pref[role].g = b.dataset.g; savePref(); paintSeats(); });
+    el.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { S.pref[role].p = b.dataset.p; savePref(); paintSeats(); });
+  });
+}
+
+function paintTopics(){
+  const list = TOPICS[S.table];
+  if (S.cat >= list.length) S.cat = 0;
+  $("cats").innerHTML = list.map((x, i) => `<button class="chip ${i === S.cat ? "on" : ""}" data-i="${i}" type="button">${esc(x.c)}</button>`).join("");
+  $("cats").querySelectorAll(".chip").forEach(b => b.onclick = () => { S.cat = +b.dataset.i; paintTopics(); });
+  $("qs").innerHTML = list[S.cat].q.map(q => `<button class="qchip" type="button">${esc(q)}</button>`).join("");
+  $("qs").querySelectorAll(".qchip").forEach(b => b.onclick = () => begin(b.textContent, list[S.cat].c));
+}
+$("startBtn").onclick = () => {
+  const own = $("ownTopic").value.trim();
+  const list = TOPICS[S.table];
+  if (own) return begin(own, "Choose Your Own Topic");
+  begin(list[S.cat].q[0], list[S.cat].c);
+};
+$("ownTopic").addEventListener("keydown", e => { if (e.key === "Enter") $("startBtn").click(); });
+$("askGo").onclick = () => { const q = $("askIn").value.trim(); if (!q) { $("sAsk").textContent = "Type or say a question first."; return; } begin(q, "Ask the Room"); };
+$("askIn").addEventListener("keydown", e => { if (e.key === "Enter") $("askGo").click(); });
+
+// ----- glossary -----
+let gDoor = "All";
+function paintGloss(){
+  $("gDoors").innerHTML = ["All"].concat(DOORS).map(d => `<button class="chip ${d === gDoor ? "on" : ""}" data-d="${esc(d)}" type="button">${esc(d)}</button>`).join("");
+  $("gDoors").querySelectorAll(".chip").forEach(b => b.onclick = () => { gDoor = b.dataset.d; paintGloss(); });
+  const q = $("gSearch").value.trim().toLowerCase();
+  const all = GLOSS.concat(Object.values(S.extraTerms));
+  let list = all.filter(x => (gDoor === "All" || x.door === gDoor) && (!q || (x.t + " " + x.d).toLowerCase().includes(q)));
+  list.sort((a, b) => a.t.localeCompare(b.t));
+  $("gGrid").innerHTML = list.length ? list.map(cardHTML).join("") : `<div class="gempty">No card for that yet. Tap <b>Look it up</b> and the room will write one.</div>`;
+  $("gGrid").querySelectorAll(".bring").forEach(b => b.onclick = () => bring(b.dataset.t));
+}
+function cardHTML(x){
+  const starter = S.level === "starter";
+  const W = ROLES[x.w] || ROLES.cfo;
+  return `<div class="gcard"><div class="door">${esc(x.door)}</div><h4>${esc(x.t)}</h4>
+    ${starter ? `<div class="st">🌱 ${esc(x.s)}</div><p>${esc(x.d)}</p>` : `<p>${esc(x.d)}</p>`}
+    ${x.f ? `<div class="f">${esc(x.f)}</div>` : ""}
+    ${x.e ? `<div class="ex">${esc(x.e)}</div>` : ""}
+    ${!starter && x.s ? `<div class="st" style="margin-top:6px">🌱 Starter: ${esc(x.s)}</div>` : ""}
+    <div class="who" style="margin-top:6px">👀 Watched most by the ${esc(W.name)}</div>
+    <button class="bring" data-t="${esc(x.t)}" type="button">🏛️ Bring it to the Boardroom</button></div>`;
+}
+$("gSearch").addEventListener("input", paintGloss);
+$("gSearch").addEventListener("keydown", e => { if (e.key === "Enter") $("gLook").click(); });
+$("gLook").onclick = async () => {
+  const q = $("gSearch").value.trim();
+  if (!q) { $("sGloss").textContent = "Type a term first."; return; }
+  const hit = GLOSS.concat(Object.values(S.extraTerms)).find(x => x.t.toLowerCase() === q.toLowerCase() || x.t.toLowerCase().startsWith(q.toLowerCase() + " "));
+  if (hit) { paintGloss(); return; }
+  $("sGloss").className = "status"; $("sGloss").textContent = "📖 Writing a card for “" + q + "”…";
+  try {
+    const j = await post("/api/boardroom", { part:"term", term:q, level:S.level }, 40000);
+    if (!j || j.ok === false || !j.term) { $("sGloss").className = "status err"; $("sGloss").textContent = "That doesn't look like a business, economics or money term. Try another word."; return; }
+    const card = { t:j.term, d:j.definition, f:j.formula || "", e:j.example || "", w:j.watches || "cfo", s:j.starter || "", door: DOORS.includes(j.door) ? j.door : "Money Basics", ai:true };
+    S.extraTerms[card.t.toLowerCase()] = card;
+    gDoor = "All"; $("sGloss").textContent = ""; $("gSearch").value = card.t; paintGloss();
+  } catch(e) { $("sGloss").className = "status err"; $("sGloss").textContent = errText(e); }
+};
+function bring(term){
+  const x = GLOSS.concat(Object.values(S.extraTerms)).find(y => y.t === term);
+  if (!x) return;
+  const role = ROLES[x.w] ? x.w : "cfo";
+  S.table = ROLES[role].table; store.set("br_table", S.table);
+  $("tCorp").classList.toggle("on", S.table === "corporate"); $("tMain").classList.toggle("on", S.table === "mainstreet");
+  S.briefRole[S.table] = role;
+  S.room = "briefing";
+  begin(`Explain "${x.t}": what it means, how it's calculated, and why executives watch it`, "The Executive Glossary", { title: x.t });
+  S.returnRoom = "glossary";
+}
+
+// ===================== BRIEF THE BOARD =====================
+// Each table asks its own questions. Everything is optional. Kept in this visit only (never sent anywhere until a room starts).
+const BRIEF_Q = {
+  corporate: [
+    { sec:"About you" },
+    { k:"role", q:"Your role", t:"one", o:["Owner / Founder","Executive","Manager","Employee","Board member / Investor","Student","Just curious"] },
+    { sec:"Your company" },
+    { k:"industry", q:"Industry", t:"select", o:["Manufacturing","SaaS / Software","IT & Managed Services","Professional Services","Financial Services","Healthcare","Retail","Online / E-commerce","Restaurants & Hospitality","Construction","Real Estate","Logistics & Transportation","Energy & Utilities","Education","Nonprofit","Other"] },
+    { k:"size", q:"Company size (people)", t:"one", o:["Just me","2–10","11–50","51–250","251–1,000","1,000+"] },
+    { k:"revenue", q:"Yearly revenue", t:"one", o:["Under $1M","$1–10M","$10–50M","$50–250M","$250M+","Not sure"] },
+    { k:"model", q:"Who you sell to", t:"one", o:["Businesses (B2B)","Consumers (B2C)","Both"] },
+    { k:"sells", q:"What you sell", t:"many", o:["Products","Services","Subscriptions / recurring"] },
+    { k:"stage", q:"Stage", t:"one", o:["Startup","Growing fast","Steady","Turnaround","Getting ready to sell"] },
+    { k:"public", q:"Ownership", t:"one", o:["Founder-owned","Family-owned","Private equity-backed","Venture-backed","Publicly traded","Nonprofit"] },
+    { sec:"Where you're headed" },
+    { k:"goals", q:"Goals and targets", t:"many", o:["Grow revenue","Improve profit","Cut costs","Improve cash flow","Raise money","Hire / build the team","Expand to new markets","Buy a business","Prepare to sell","Use AI and tech","Learn the basics"] },
+    { k:"timeline", q:"Time frame", t:"one", o:["This quarter","This year","Next 2–5 years"] }
+  ],
+  mainstreet: [
+    { sec:"About you" },
+    { k:"role", q:"You are", t:"one", o:["Owner","Co-owner / partner","Thinking of starting a business","Thinking of buying a business","Employee","Student","Just curious"] },
+    { sec:"Your business" },
+    { k:"industry", q:"Type of business", t:"select", o:["Restaurant / Food","Retail shop","Trades (HVAC, plumbing, electrical)","Construction / Contracting","Salon / Personal services","Professional services (accounting, law, consulting)","Medical / Dental practice","Auto repair / Auto","Fitness / Wellness","Cleaning / Landscaping","Childcare / Education","Real estate","Online shop","Other"] },
+    { k:"years", q:"Years in business", t:"one", o:["Not started yet","Under 2","2–5","6–15","Over 15"] },
+    { k:"team", q:"Team size", t:"one", o:["Just me","2–5","6–20","21–50","Over 50"] },
+    { k:"sales", q:"Yearly sales", t:"one", o:["Under $250K","$250K–$1M","$1–5M","Over $5M","Not sure"] },
+    { k:"structure", q:"Business structure", t:"one", o:["Sole proprietor","LLC","S-Corp","Partnership","Not sure"] },
+    { k:"family", q:"Family business?", t:"one", o:["Yes","No"] },
+    { k:"goals", q:"Business goals", t:"many", o:["Grow sales","More profit","Hire help","Open another location","Add a new product or service","Buy a business","Pay myself more","Separate business and personal money","Get out of debt","Learn the basics"] },
+    { sec:"Selling or passing it on", note:"For the Exit Planner" },
+    { k:"exit", q:"Thinking about an exit?", t:"one", o:["Within a year","1–3 years","3–5 years","5+ years","Not planning one","Not sure"] },
+    { k:"successor", q:"Who might take over?", t:"one", o:["My kids / family","Employees","A partner","An outside buyer","Not sure"] },
+    { sec:"Your own money", note:"For the Personal Financial Advisor" },
+    { k:"life", q:"Life stage", t:"one", o:["Just starting out","Building (30s–40s)","Peak earning years","Near retirement","Retired"] },
+    { k:"money", q:"Money goals", t:"many", o:["Build an emergency fund","Pay off debt","Buy a home","Save for retirement","Kids' college","Start investing","Pay myself a steady salary"] },
+    { k:"accounts", q:"Retirement savings so far", t:"one", o:["None yet","401(k) at work","IRA","Solo 401(k) / SEP IRA","Not sure"] }
+  ]
+};
+const BR = { corporate:{}, mainstreet:{} };
+function paintBrief(){
+  const t = S.table, A = BR[t];
+  $("briefFields").innerHTML = BRIEF_Q[t].map(f => {
+    if (f.sec) return `<div class="bsec">${esc(f.sec)}${f.note ? ` <small style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:600">· ${esc(f.note)}</small>` : ""}</div>`;
+    if (f.t === "select") return `<div class="bq"><label for="bf_${f.k}">${esc(f.q)}</label><select id="bf_${f.k}" data-k="${f.k}"><option value="">Choose…</option>${f.o.map(o => `<option ${A[f.k] === o ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
+    const cur = A[f.k] || (f.t === "many" ? [] : "");
+    return `<div class="bq"><label>${esc(f.q)}${f.t === "many" ? " <small>(pick any)</small>" : ""}</label><div class="mini">${f.o.map(o => `<button class="chip ${f.t === "many" ? (cur.includes(o) ? "on" : "") : (cur === o ? "on" : "")}" data-k="${f.k}" data-t="${f.t}" data-v="${esc(o)}" type="button">${esc(o)}</button>`).join("")}</div></div>`;
+  }).join("");
+  $("briefFields").querySelectorAll("select").forEach(el => el.onchange = () => { A[el.dataset.k] = el.value; briefTag(); });
+  $("briefFields").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+    const k = b.dataset.k, v = b.dataset.v;
+    if (b.dataset.t === "many") { const L = A[k] || (A[k] = []); L.includes(v) ? L.splice(L.indexOf(v), 1) : L.push(v); }
+    else A[k] = A[k] === v ? "" : v;
+    paintBrief();
+  });
+  $("bChallenge").value = A.challenge || ""; $("bExtra").value = A.extra || "";
+  briefTag();
+}
+$("bChallenge").addEventListener("input", () => { BR[S.table].challenge = $("bChallenge").value; briefTag(); });
+$("bExtra").addEventListener("input", () => { BR[S.table].extra = $("bExtra").value; briefTag(); });
+$("briefClear").onclick = () => { BR[S.table] = {}; paintBrief(); };
+function briefText(t){
+  t = t || S.table;
+  const A = BR[t]; if (!A) return "";
+  const out = [];
+  BRIEF_Q[t].forEach(f => { if (!f.k) return; const v = A[f.k]; if (Array.isArray(v) ? v.length : v) out.push(`${f.q.replace(/\?$/, "")}: ${Array.isArray(v) ? v.join(", ") : v}`); });
+  if ((A.challenge || "").trim()) out.push("Biggest challenge: " + A.challenge.trim());
+  if ((A.extra || "").trim()) out.push("More background: " + A.extra.trim());
+  return out.join("\n");
+}
+function briefTag(){ $("briefTag").classList.toggle("hide", !briefText()); }
+
+// ----- Please review this -----
+S.doc = null;
+$("rvFile").onclick = () => $("rvFileIn").click();
+$("rvPhoto").onclick = () => $("rvImgIn").click();
+$("rvPaste").onclick = () => { $("rvText").classList.toggle("hide"); if (!$("rvText").classList.contains("hide")) $("rvText").focus(); };
+$("rvText").addEventListener("input", () => { if ($("rvText").value.trim()) { S.doc = { kind:"text", name:"Pasted text", text:$("rvText").value.slice(0, 60000) }; showDoc(); } else if (S.doc && S.doc.name === "Pasted text") { S.doc = null; showDoc(); } });
+function showDoc(){
+  const d = S.doc;
+  $("rvFileShow").innerHTML = d && d.name !== "Pasted text" ? `<div class="file"><span>📄 ${esc(d.name)} <small style="color:var(--muted)">${esc(d.size || "")}</small></span><button type="button" aria-label="Remove">✕</button></div>` : "";
+  const x = $("rvFileShow").querySelector("button"); if (x) x.onclick = () => { S.doc = null; showDoc(); };
+}
+const toB64 = buf => { let s = "", b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+const kb = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+async function readDocx(buf){
+  // A Word file is a zip: find word/document.xml, unzip it with the browser's own tools, keep the text
+  const v = new DataView(buf), u8 = new Uint8Array(buf);
+  let eocd = -1; for (let i = u8.length - 22; i >= Math.max(0, u8.length - 70000); i--) if (v.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error("bad");
+  let p = v.getUint32(eocd + 16, true); const n = v.getUint16(eocd + 10, true);
+  for (let k = 0; k < n; k++) {
+    const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true), nlen = v.getUint16(p + 28, true), elen = v.getUint16(p + 30, true), clen = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen));
+    if (name === "word/document.xml") {
+      const ln = v.getUint16(off + 26, true), le = v.getUint16(off + 28, true);
+      const data = u8.subarray(off + 30 + ln + le, off + 30 + ln + le + csize);
+      let xml;
+      if (method === 0) xml = new TextDecoder().decode(data);
+      else xml = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+      return xml.replace(/<\/w:p>/g, "\n").replace(/<w:tab\/>/g, "\t").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/\n{3,}/g, "\n\n").trim();
+    }
+    p += 46 + nlen + elen + clen;
+  }
+  throw new Error("bad");
+}
+async function takeFile(f){
+  $("sRv").className = "status"; $("sRv").textContent = "";
+  if (!f) return;
+  const name = f.name || "file", ext = (name.split(".").pop() || "").toLowerCase();
+  try {
+    if (f.type.startsWith("image/")) {
+      const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = URL.createObjectURL(f); });
+      const sc = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      S.doc = { kind:"image", name, media_type:"image/jpeg", data:c.toDataURL("image/jpeg", 0.85).split(",")[1], size:kb(f.size) };
+    } else if (ext === "pdf" || f.type === "application/pdf") {
+      if (f.size > 3 * 1048576) { $("sRv").className = "status err"; $("sRv").textContent = "That PDF is over 3 MB. Try a shorter version, or copy and paste the key pages."; return; }
+      S.doc = { kind:"pdf", name, data:toB64(await f.arrayBuffer()), size:kb(f.size) };
+    } else if (ext === "docx") {
+      const text = await readDocx(await f.arrayBuffer());
+      if (!text) throw new Error("empty");
+      S.doc = { kind:"text", name, text:text.slice(0, 60000), size:kb(f.size) };
+    } else if (["txt","md","csv","tsv"].includes(ext) || f.type.startsWith("text/")) {
+      S.doc = { kind:"text", name, text:(await f.text()).slice(0, 60000), size:kb(f.size) };
+    } else if (["xlsx","xls","doc","pptx","ppt"].includes(ext)) {
+      $("sRv").className = "status err"; $("sRv").textContent = "Please save that file as a PDF (or a spreadsheet as CSV) and attach it again."; return;
+    } else { $("sRv").className = "status err"; $("sRv").textContent = "That file type isn't supported. Try a PDF, Word (.docx), text or CSV file, or paste the text."; return; }
+    $("rvText").classList.add("hide"); $("rvText").value = "";
+    showDoc();
+  } catch(e) { $("sRv").className = "status err"; $("sRv").textContent = "Couldn't read that file. Try saving it as a PDF, or paste the text instead."; }
+}
+$("rvFileIn").onchange = e => { takeFile(e.target.files[0]); e.target.value = ""; };
+$("rvImgIn").onchange = e => { takeFile(e.target.files[0]); e.target.value = ""; };
+$("rvGo").onclick = () => {
+  if (!S.doc) { $("sRv").className = "status err"; $("sRv").textContent = "Attach a file or paste some text first."; return; }
+  const note = $("rvNote").value.trim();
+  const topic = note || ("Please review " + (S.doc.name === "Pasted text" ? "what I pasted" : "“" + S.doc.name + "”"));
+  if (S.room === "meeting" && S.picked[S.table].length < 2) S.picked[S.table] = SEATS[S.table].slice();
+  begin(topic, "Review", { review:true });
+};
+
+// ===================== NETWORK =====================
+async function post(url, body, ms){
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms || 60000);
+  try {
+    const r = await fetch(url, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(body), signal: ctl.signal });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.message || j.error || ("HTTP " + r.status)); e.status = r.status; e.body = j; throw e; }
+    return j;
+  } finally { clearTimeout(t); }
+}
+function errText(e){
+  if (e && e.status === 402) return "This is a members feature. Join or log in to keep going.";
+  if (e && e.status === 429) return "That's a busy board! Take a short break and try again soon.";
+  if (e && e.name === "AbortError") return "The room took too long to answer. Please try again.";
+  return (e && e.body && e.body.message) || "The boardroom hit a snag. Please try again.";
+}
+
+// ===================== BEGIN A SESSION =====================
+function seatsFor(t){ return S.picked[t].map(role => ({ role, gender:S.pref[role].g, persona:S.pref[role].p })); }
+// Every call carries the viewer's brief; the attached material goes only on the first call, then the board's notes on it
+function ctx(withDoc){
+  const o = { brief: briefText(), docNotes: S.docNotes || "" };
+  if (withDoc && S.doc) o.doc = S.doc;
+  return o;
+}
+function takeNotes(j){ if (j && j.doc_notes) S.docNotes = j.doc_notes; }
+
+async function begin(topic, category, opt){
+  opt = opt || {};
+  blessVoice();
+  const room = S.room;
+  S.returnRoom = room;
+  S.token++; stopVoice();
+  const review = !!opt.review;
+  Object.assign(S, { mode: room === "glossary" ? "briefing" : room, topic, category, history:[], rounds:0, screens:[], sIdx:0, started:false, presenter:null, title: opt.title || "", docNotes:"", clarify:null, lastRole:null, votes:[], takeaway:null, review, docName: review && S.doc ? S.doc.name : "" });
+  const statusEl = review ? $("sRv") : room === "ask" ? $("sAsk") : room === "glossary" ? $("sGloss") : $("s3");
+  statusEl.className = "status"; statusEl.textContent = "⏳ Getting the room ready…";
+  showRoom();
+  const kind = S.mode === "meeting" ? "The Meeting" : S.mode === "ask" ? "Ask the Room" : "Executive Briefing";
+  const kindLabel = review ? kind + " · Review" : kind;
+  if (S.mode === "meeting") {
+    S.seats = seatsFor(S.table);
+    paintPeople(S.seats.map(s => s.role), true);
+    paintAgenda(kindLabel, "", topic);
+    think(review ? "The board is reading what you shared…" : "Mr. Paul is calling the meeting to order…");
+    try {
+      const j = await post("/api/boardroom", Object.assign({ part:"meeting", step:"open", table:S.table, level:S.level, topic, category, seats:S.seats }, ctx(review)), 120000);
+      if (j.ok === false) return backToSetup(statusEl, "🧑‍⚖️ Mr. Paul: " + (j.decline || "Let's keep this one about business or money. Try another topic!"));
+      takeNotes(j);
+      S.title = j.title || topic;
+      paintAgenda(kindLabel, S.title, topic);
+      const beats = [];
+      if (j.chair) beats.push({ who:"chair", text:j.chair, screen:j.screen });
+      j.lines.forEach((l, i) => beats.push({ who:l.role, text:l.text, screen: (!j.chair && i === 0) ? j.screen : null }));
+      S.rounds = 1;
+      statusEl.textContent = "";
+      await playBatch(beats, j.next_prompts, j.clarify);
+    } catch(e){ backToSetup(statusEl, errText(e), true); }
+    return;
+  }
+  // briefing / ask
+  const isAsk = S.mode === "ask";
+  const role = isAsk ? null : S.briefRole[S.table];
+  if (role) { S.presenter = role; paintPeople([role], false); } else paintPeople(SEATS[S.table], false);
+  paintAgenda(kindLabel, opt.title || "", isAsk ? topic : (opt.title ? "" : topic));
+  think(review ? "Reading what you shared…" : isAsk ? "The room is deciding who should answer…" : "The " + ROLES[role].name + " is preparing the slides…");
+  try {
+    const body = Object.assign(isAsk ? { part:"ask", table:S.table, level:S.level, question:topic, persona:"steady" }
+                                     : { part:"briefing", table:S.table, level:S.level, role, persona:S.pref[role].p, topic, category }, ctx(review));
+    const j = await post("/api/boardroom", body, 120000);
+    if (j.ok === false) return backToSetup(statusEl, "🧑‍⚖️ Mr. Paul: " + (j.decline || "Let's keep this one about business or money. Try another topic!"));
+    takeNotes(j);
+    S.presenter = j.role;
+    if (isAsk) paintPeople([j.role], false);
+    S.title = opt.title || j.title || topic;
+    paintAgenda(kindLabel, S.title, isAsk ? topic : "");
+    statusEl.textContent = "";
+    await playBatch(j.slides.map(s => ({ who:j.role, text:s.say, screen:s.screen })), j.next_prompts, j.clarify);
+  } catch(e){ backToSetup(statusEl, errText(e), true); }
+}
+function backToSetup(statusEl, msg, isErr){
+  think(false);
+  showSetup();
+  statusEl.className = "status" + (isErr ? " err" : "");
+  statusEl.textContent = msg;
+  statusEl.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+function showRoom(){
+  $("setup").classList.add("hide"); $("room").classList.remove("hide"); $("stopBtn").classList.remove("hide");
+  $("adjourn").classList.add("hide"); $("logBody").innerHTML = ""; $("prompts").innerHTML = "";
+  $("caption").innerHTML = `<span class="ph">The conversation will appear here.</span>`;
+  $("screen").innerHTML = `<div class="empty">📊 Diagrams will appear here.</div>`; $("defs").classList.add("hide"); $("pNum").textContent = "";
+  $("jump").classList.remove("hide"); jumpMode = "question"; jumpTarget = ""; lastPrompts = []; setJump(false, [], null);
+  const bt = briefText();
+  $("briefCard").classList.toggle("hide", !bt && !S.docName);
+  $("briefCard").innerHTML = (bt ? `📋 Using your company brief` : "") + (S.docName ? `${bt ? " · " : ""}📎 Reviewing: ${esc(S.docName)}` : "");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function showSetup(){
+  S.token++; stopVoice(); think(false);
+  $("room").classList.add("hide"); $("setup").classList.remove("hide"); $("stopBtn").classList.add("hide");
+  if (S.returnRoom) { S.room = S.returnRoom; document.querySelectorAll(".rcard").forEach(b => b.classList.toggle("on", b.dataset.room === S.room)); $("tCorp").classList.toggle("on", S.table === "corporate"); $("tMain").classList.toggle("on", S.table === "mainstreet"); paintStep3(); }
+}
+$("stopBtn").onclick = () => { showSetup(); window.scrollTo({ top:0, behavior:"smooth" }); };
+
+function paintAgenda(kind, title, q){
+  $("agKind").textContent = kind;
+  $("agTitle").textContent = title || "…";
+  $("agQ").textContent = q || "";
+  const lv = S.level === "starter" ? "🌱 Starter" : "🎓 Executive";
+  $("agBadges").innerHTML = `<span class="badge">${S.table === "corporate" ? "🏢 Corporate Table" : "🏪 Main Street Table"}</span><span class="badge">${lv}</span>`;
+}
+const MRPAUL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" class="mpr-svg" aria-hidden="true"><defs><linearGradient id="mpr-skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d2bb"></stop><stop offset="1" stop-color="#eebc9f"></stop></linearGradient><linearGradient id="mpr-coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"></stop><stop offset="1" stop-color="#e6ecf2"></stop></linearGradient><linearGradient id="mpr-lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8dde0" stop-opacity=".45"></stop><stop offset="1" stop-color="#aeb6bc" stop-opacity=".3"></stop></linearGradient><linearGradient id="mpr-glens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f6ff"></stop><stop offset=".6" stop-color="#a9d8f2"></stop><stop offset="1" stop-color="#7fbfe3"></stop></linearGradient></defs><path d="M34 380 C38 316 74 288 120 280 L160 300 L200 280 C246 288 282 316 286 380 Z" fill="#1f3157" stroke="#0c1424" stroke-width="3"></path><path d="M126 282 L160 300 L194 282 L184 380 L136 380 Z" fill="#f8fafc"></path><path d="M120 280 L160 300 L148 330 L140 380 L112 380 Z" fill="#26395f" stroke="#0c1424" stroke-width="2.5"></path><path d="M200 280 L160 300 L172 330 L180 380 L208 380 Z" fill="#26395f" stroke="#0c1424" stroke-width="2.5"></path><path d="M150 300 L170 300 L166 312 L174 366 L160 380 L146 366 L154 312 Z" fill="#b3263a" stroke="#6d1422" stroke-width="2"></path><path d="M206 318 L226 316 L224 324 L208 326 Z" fill="#e8c478"></path><rect x="66" y="336" width="58" height="22" rx="4" fill="#e8c478"></rect><text x="95" y="351.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#1a1405">Chair</text><!-- neck --><path d="M134 240 L136 290 Q160 304 184 290 L186 240 Z" fill="#e8b294"></path><!-- side hair (behind head), soft and fluffy --><g fill="#dedad2"><ellipse cx="82" cy="130" rx="14" ry="22"></ellipse><ellipse cx="78" cy="152" rx="18" ry="30"></ellipse><ellipse cx="76" cy="182" rx="14" ry="24"></ellipse><ellipse cx="88" cy="206" rx="12" ry="16"></ellipse><ellipse cx="238" cy="130" rx="14" ry="22"></ellipse><ellipse cx="242" cy="152" rx="18" ry="30"></ellipse><ellipse cx="244" cy="182" rx="14" ry="24"></ellipse><ellipse cx="232" cy="206" rx="12" ry="16"></ellipse></g><g stroke="#c2bdb3" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M70 132 C64 150 64 170 70 190"></path><path d="M78 140 C74 160 74 184 82 206"></path><path d="M66 124 C62 118 60 112 61 106"></path><path d="M250 132 C256 150 256 170 250 190"></path><path d="M242 140 C246 160 246 184 238 206"></path><path d="M254 124 C258 118 260 112 259 106"></path></g><!-- ears --><ellipse cx="82" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><ellipse cx="238" cy="168" rx="13" ry="20" fill="#eab597"></ellipse><path d="M84 158 Q78 168 85 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><path d="M236 158 Q242 168 235 178" stroke="#cf957a" stroke-width="2.5" fill="none" stroke-linecap="round"></path><!-- head --><path d="M160 42 C216 42 240 86 240 142 C240 210 214 254 160 254 C106 254 80 210 80 142 C80 86 104 42 160 42 Z" fill="url(#mpr-skin)"></path><!-- thinning hair on top --><path d="M90 118 C88 74 116 46 160 44 C204 46 232 74 230 118 C222 96 206 82 186 80 C176 70 146 70 134 80 C114 82 98 96 90 118 Z" fill="#d6d1c8"></path><g stroke="#b3ada2" stroke-width="2" fill="none" stroke-linecap="round"><path d="M110 84 C122 62 140 52 160 50"></path><path d="M122 78 C134 62 150 56 166 56"></path><path d="M210 84 C198 62 180 52 160 50"></path><path d="M198 78 C186 62 170 56 154 58"></path><path d="M96 106 C100 90 108 80 120 72"></path><path d="M224 106 C220 90 212 80 200 72"></path><path d="M146 72 C150 64 158 60 166 62"></path><path d="M160 70 C164 62 172 58 180 60"></path></g><ellipse cx="160" cy="58" rx="22" ry="7" fill="#fff" opacity=".22"></ellipse><g><path d="M108 136 Q126 126 146 132" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path><path d="M174 132 Q194 126 212 136" stroke="#8c847a" stroke-width="5" fill="none" stroke-linecap="round"></path></g><!-- eyes --><ellipse cx="128" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><ellipse cx="192" cy="158" rx="10" ry="7.5" fill="#fff"></ellipse><circle cx="129" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="193" cy="158" r="5.5" fill="#7d9277"></circle><circle cx="129" cy="158" r="2.6" fill="#22262b"></circle><circle cx="193" cy="158" r="2.6" fill="#22262b"></circle><circle cx="131" cy="156" r="1.4" fill="#fff"></circle><circle cx="195" cy="156" r="1.4" fill="#fff"></circle><!-- smile crinkles --><path d="M112 164 Q118 170 126 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><path d="M208 164 Q202 170 194 168" stroke="#d29c80" stroke-width="2" fill="none" stroke-linecap="round"></path><!-- glasses: dark grey translucent rectangular frames --><rect x="100" y="138" width="56" height="40" rx="8" fill="url(#mpr-lens)" stroke="#555b63" stroke-width="6"></rect><rect x="164" y="138" width="56" height="40" rx="8" fill="url(#mpr-lens)" stroke="#555b63" stroke-width="6"></rect><path d="M156 152 Q160 148 164 152" stroke="#555b63" stroke-width="5" fill="none"></path><path d="M100 148 L84 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><path d="M220 148 L236 146" stroke="#555b63" stroke-width="5" stroke-linecap="round"></path><circle cx="104" cy="142" r="2" fill="#9aa1a9"></circle><circle cx="216" cy="142" r="2" fill="#9aa1a9"></circle><!-- nose --><path d="M160 168 C156 186 150 196 152 202 C156 208 166 208 170 202" stroke="#cf957a" stroke-width="3.5" fill="none" stroke-linecap="round"></path><!-- rosy cheeks --><ellipse cx="114" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><ellipse cx="206" cy="200" rx="15" ry="9" fill="#f29a8a" opacity=".45"></ellipse><!-- light stubble around mouth and chin --><path d="M122 212 C128 244 192 244 198 212 C198 234 184 252 160 252 C136 252 122 234 122 212 Z" fill="#c9b6a6" opacity=".22"></path><g><path d="M136 220 Q160 236 184 220" stroke="#b5635a" stroke-width="4.5" fill="none" stroke-linecap="round"></path><path d="M132 218 Q134 222 137 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M188 218 Q186 222 183 221" stroke="#b5635a" stroke-width="3" fill="none" stroke-linecap="round"></path></g></svg></svg>`;
+function paintPeople(roles, withChair){
+  const items = (withChair ? ["chair"] : []).concat(roles);
+  $("people").style.setProperty("--n", Math.min(items.length, 4));
+  $("people").innerHTML = items.map(r => r === "chair"
+    ? `<div class="person chair" data-who="chair">${MRPAUL}<div class="wave"><i></i><i></i><i></i></div><div class="plate">Mr. Paul<small>The Chair</small></div></div>`
+    : `<div class="person" data-who="${r}"><img src="${pic(r, S.pref[r].g)}" alt="${esc(ROLES[r].long)}"><div class="wave"><i></i><i></i><i></i></div><div class="plate">${esc(r === "pfa" ? "Financial Advisor" : ROLES[r].name)}<small>${esc((PERSONAS.find(x => x.k === S.pref[r].p) || PERSONAS[0]).label)}</small></div></div>`
+  ).join("");
+}
+function setLive(who, talking){
+  $("people").querySelectorAll(".person").forEach(p => { const on = p.dataset.who === who; p.classList.toggle("live", on); p.classList.toggle("talking", on && !!talking); });
+}
+function think(msg){
+  if (msg === false) { $("thinking").classList.remove("on"); return; }
+  $("thinkMsg").textContent = msg; $("thinking").classList.add("on");
+}
+function nameOf(who){ return who === "chair" ? "Mr. Paul (Chair)" : who === "user" ? "You" : (ROLES[who] ? ROLES[who].name : "Executive"); }
+function logRow(who, text){
+  const d = document.createElement("div"); d.className = "row" + (who === "user" ? " u" : "");
+  d.innerHTML = `<b>${esc(nameOf(who))}:</b> ${esc(text)}`; $("logBody").appendChild(d);
+}
+
+// ===================== VOICE ENGINE =====================
+const voiceEl = new Audio(); voiceEl.preload = "auto";
+try { voiceEl.preservesPitch = true; voiceEl.mozPreservesPitch = true; voiceEl.webkitPreservesPitch = true; } catch(e){}
+let blessed = false;
+const SILENT = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+function blessVoice(){ if (blessed) return; blessed = true; try { voiceEl.src = SILENT; const p = voiceEl.play(); if (p && p.catch) p.catch(() => {}); } catch(e){} }
+let rate = parseFloat(store.get("br_rate", "1")) || 1;
+const rateLabel = () => (Math.round(rate * 100) / 100).toString() + "×";
+$("rate").value = rate; $("rateVal").textContent = rateLabel();
+$("rate").oninput = () => { rate = parseFloat($("rate").value); $("rateVal").textContent = rateLabel(); store.set("br_rate", String(rate)); try { voiceEl.playbackRate = rate; } catch(e){} };
+
+let muted = store.get("br_muted", "0") === "1";
+function paintMute(){ $("muteBtn").textContent = muted ? "🔊 Sound on" : "🔇 Mute"; $("muteBtn").setAttribute("aria-pressed", muted ? "true" : "false"); }
+paintMute();
+$("muteBtn").onclick = () => { muted = !muted; store.set("br_muted", muted ? "1" : "0"); paintMute(); if (muted && speaking && !useTimer) { const pos = curWord; stopAudioOnly(); readAlong(pos); } };
+
+let speaking = false, paused = false, useTTS = false, useTimer = false, words = [], curWord = 0, loopId = 0, endResolve = null, timerT = null, timerLeft = 0, timerStart = 0;
+const voiceCache = new Map();
+function voiceKey(who){ return who === "chair" ? "chair" : `${who}-${S.pref[who] ? S.pref[who].g : "m"}`; }
+function getVoice(text, who){
+  if (muted) return Promise.resolve(null);
+  const k = voiceKey(who) + "|" + text;
+  if (voiceCache.has(k)) return voiceCache.get(k);
+  const p = post("/api/speak", { text, voice: voiceKey(who), persona: who === "chair" ? "chair" : (S.pref[who] ? S.pref[who].p : "steady") }, 40000).catch(() => null);
+  voiceCache.set(k, p);
+  if (voiceCache.size > 60) voiceCache.delete(voiceCache.keys().next().value);
+  return p;
+}
+function stopAudioOnly(){
+  try { voiceEl.pause(); } catch(e){}
+  try { speechSynthesis.cancel(); } catch(e){}
+  cancelAnimationFrame(loopId);
+}
+function stopVoice(){
+  stopAudioOnly(); clearTimeout(timerT);
+  speaking = false; paused = false; useTimer = false;
+  $("caption").classList.remove("speaking"); setLive(null);
+  if (endResolve) { const r = endResolve; endResolve = null; r(); }
+  paintCtrls();
+}
+function paintCtrls(){
+  $("pauseBtn").disabled = !speaking || paused;
+  $("contBtn").disabled = !speaking || !paused;
+  $("replayBtn").disabled = !lastBeat || S.busy || speaking;
+}
+function wordsFromAlignment(al, text){
+  if (!al || !al.characters) return text.split(/\s+/).filter(Boolean).map(w => ({ w, t:null }));
+  const out = []; let cur = "", t0 = null;
+  al.characters.forEach((ch, i) => {
+    if (/\s/.test(ch)) { if (cur) out.push({ w:cur, t:t0 }); cur = ""; t0 = null; }
+    else { if (!cur) t0 = al.character_start_times_seconds[i]; cur += ch; }
+  });
+  if (cur) out.push({ w:cur, t:t0 });
+  return out;
+}
+function paintCaption(list, who){
+  words = list; curWord = 0;
+  $("caption").innerHTML = `<span class="spk">${esc(nameOf(who))}:</span>` + list.map((x, i) => `<span class="w" data-i="${i}">${esc(x.w)}</span>`).join(" ");
+}
+function lightWord(i){
+  curWord = i;
+  $("caption").querySelectorAll(".w").forEach((s, j) => { s.classList.toggle("done", j < i); s.classList.toggle("on", j === i); });
+}
+// Muted / no-voice reading: words light up at a reading pace; Pause and Continue still work.
+function readAlong(from){
+  useTimer = true; speaking = true; paused = false;
+  $("caption").classList.add("speaking"); paintCtrls();
+  let i = from || 0;
+  const step = () => {
+    if (!speaking) return;
+    if (paused) { timerT = setTimeout(step, 150); return; }
+    if (i >= words.length) { finishBeat(); return; }
+    lightWord(i);
+    const w = words[i].w; i++;
+    timerT = setTimeout(step, (180 + w.length * 28) / rate);
+  };
+  step();
+}
+function finishBeat(){
+  speaking = false; useTimer = false; cancelAnimationFrame(loopId); clearTimeout(timerT);
+  $("caption").classList.remove("speaking"); lightWord(words.length);
+  $("people").querySelectorAll(".person").forEach(p => p.classList.remove("talking"));
+  paintCtrls();
+  if (endResolve) { const r = endResolve; endResolve = null; r(); }
+}
+let lastBeat = null;
+function sayBeat(beat, voicePromise){
+  return new Promise(async resolve => {
+    stopAudioOnly(); clearTimeout(timerT);
+    endResolve = resolve;
+    lastBeat = beat;
+    setLive(beat.who, true);
+    if (muted) { paintCaption(beat.text.split(/\s+/).filter(Boolean).map(w => ({ w, t:null })), beat.who); readAlong(0); return; }
+    const data = await voicePromise;
+    if (endResolve !== resolve) return; // stopped while waiting
+    paintCaption(wordsFromAlignment(data && data.alignment, beat.text), beat.who);
+    if (data && data.audio) {
+      useTTS = false; useTimer = false;
+      if (!data.url) data.url = URL.createObjectURL(new Blob([Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))], { type:"audio/mpeg" }));
+      voiceEl.src = data.url; voiceEl.playbackRate = rate;
+      voiceEl.onended = () => finishBeat();
+      try { await voiceEl.play(); }
+      catch(e) { await tapToPlay(); }
+      speaking = true; paused = false; paintCtrls();
+      $("caption").classList.add("speaking");
+      const tick = () => {
+        if (!speaking || useTimer) return;
+        if (words.length) {
+          const t = voiceEl.currentTime; let k = -1;
+          for (let i = 0; i < words.length; i++) { if (words[i].t != null && words[i].t <= t + 0.03) k = i; else if (words[i].t != null) break; }
+          if (k >= 0 && k !== curWord) lightWord(k);
+        }
+        loopId = requestAnimationFrame(tick);
+      };
+      loopId = requestAnimationFrame(tick);
+    } else if ("speechSynthesis" in window) {
+      // Fallback: the browser's own voice
+      useTTS = true; useTimer = false;
+      try {
+        const u = new SpeechSynthesisUtterance(beat.text); u.rate = rate;
+        u.onboundary = ev => lightWord(beat.text.slice(0, ev.charIndex).split(/\s+/).filter(Boolean).length);
+        u.onend = () => finishBeat();
+        speaking = true; paused = false; paintCtrls(); $("caption").classList.add("speaking");
+        speechSynthesis.speak(u);
+      } catch(e) { readAlong(0); }
+    } else readAlong(0);
+  });
+}
+function tapToPlay(){
+  return new Promise(r => {
+    const L = $("startLayer");
+    L.innerHTML = `<button class="go big" type="button">▶ Tap to hear the room</button>`; L.classList.add("on");
+    L.querySelector("button").onclick = () => { L.classList.remove("on"); voiceEl.play().then(r).catch(r); };
+  });
+}
+$("pauseBtn").onclick = () => { if (!speaking) return; paused = true; if (useTimer) {} else if (useTTS) speechSynthesis.pause(); else voiceEl.pause(); $("people").querySelectorAll(".person").forEach(p => p.classList.remove("talking")); paintCtrls(); };
+$("contBtn").onclick = () => { if (jumpMode === "interrupt") { jumpMode = "question"; S.interrupted = null; setJump(false); } if (!speaking) return; paused = false; if (useTimer) {} else if (useTTS) speechSynthesis.resume(); else voiceEl.play().catch(() => {}); const live = $("people").querySelector(".person.live"); if (live) live.classList.add("talking"); paintCtrls(); };
+$("replayBtn").onclick = () => { if (!lastBeat || S.busy || speaking) return; const b = lastBeat; if (b.screen) showScreenObj(b.screen); sayBeat(b, getVoice(b.text, b.who)).then(() => { setLive(null); paintCtrls(); }); };
+
+// ===================== PLAYBACK OF A BATCH =====================
+async function playBatch(beats, prompts, clarify){
+  const my = ++S.token;
+  S.busy = true; S.clarify = null; setJump(false, null, null); think(false);
+  beats = beats.filter(b => b && b.text);
+  // Screens go on the wall as they come up
+  const firstScreen = beats.find(b => b.screen);
+  if (firstScreen) showScreenObj(firstScreen.screen);
+  // Presentations begin only once the first image is up: a Start button for the first batch
+  if (!S.started) {
+    await new Promise(r => {
+      const L = $("startLayer");
+      L.innerHTML = `<button class="go big" type="button">▶ Start</button>`; L.classList.add("on");
+      L.querySelector("button").onclick = () => { blessVoice(); L.classList.remove("on"); r(); };
+    });
+    S.started = true;
+  }
+  let next = beats.length ? getVoice(beats[0].text, beats[0].who) : null;
+  for (let i = 0; i < beats.length; i++) {
+    if (my !== S.token) return;
+    const b = beats[i];
+    const cur = next;
+    next = i + 1 < beats.length ? getVoice(beats[i + 1].text, beats[i + 1].who) : null;
+    if (b.screen) showScreenObj(b.screen);
+    S.history.push({ who:b.who, text:b.text });
+    if (b.who !== "chair" && b.who !== "user") S.lastRole = b.who;
+    logRow(b.who, b.text);
+    setTimeout(() => { if (S.busy) setJump(false); }, 60);
+    await sayBeat(b, cur);
+    if (my !== S.token) return;
+    if (i + 1 < beats.length) await sleep(350);
+  }
+  if (my !== S.token) return;
+  S.busy = false; setLive(null); paintCtrls();
+  setJump(true, prompts || [], clarify || null);
+}
+
+// ===================== THE WALL SCREEN =====================
+function showScreenObj(sc){
+  if (!sc) return;
+  if (!S.screens.includes(sc)) S.screens.push(sc);
+  S.sIdx = S.screens.indexOf(sc);
+  paintScreen();
+}
+function paintScreen(){
+  const sc = S.screens[S.sIdx];
+  $("pPrev").disabled = S.sIdx <= 0; $("pNext").disabled = S.sIdx >= S.screens.length - 1;
+  $("pNum").textContent = S.screens.length ? `${S.sIdx + 1} / ${S.screens.length}` : "";
+  if (!sc) return;
+  let body = "";
+  try { body = renderDiagram(sc); } catch(e) { body = `<div class="empty">📊 ${esc(sc.caption || "")}</div>`; }
+  $("screen").innerHTML = (sc.example_numbers !== false && hasNumbers(sc) ? `<div class="exnote">Example numbers</div>` : "") +
+    `<div class="stitle">${esc(sc.title || "")}</div><div class="scap">${esc(sc.caption || "")}</div>` + body;
+  paintDefs();
+}
+$("pPrev").onclick = () => { if (S.sIdx > 0) { S.sIdx--; paintScreen(); } };
+$("pNext").onclick = () => { if (S.sIdx < S.screens.length - 1) { S.sIdx++; paintScreen(); } };
+let defsOpen = false;
+$("defBtn").onclick = () => { defsOpen = !defsOpen; paintDefs(); };
+function paintDefs(){
+  $("defBtn").textContent = defsOpen ? "📘 Hide Definitions" : "📘 Expand Definitions";
+  $("defs").classList.toggle("hide", !defsOpen);
+  if (!defsOpen) return;
+  const sc = S.screens[S.sIdx];
+  const terms = (sc && sc.terms) || [];
+  $("defs").innerHTML = terms.length ? `<dl>${terms.map(t => `<dt>${esc(t.word)}</dt><dd>${esc(t.meaning)}</dd>`).join("")}</dl>` : `<div class="note">No extra terms on this screen. Try the Executive Glossary for more.</div>`;
+}
+function hasNumbers(sc){ return (sc.kind === "bars" || sc.kind === "waterfall") ? true : sc.kind === "formula" ? (sc.example || []).length > 0 : false; }
+
+function fmt(v, unit){
+  const u = String(unit || "").trim();
+  const a = Math.abs(v); let s;
+  if (a >= 1e9) s = (v / 1e9).toFixed(a >= 1e10 ? 0 : 1).replace(/\.0$/, "") + "B";
+  else if (a >= 1e6) s = (v / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
+  else if (a >= 1e4) s = (v / 1e3).toFixed(a >= 1e5 ? 0 : 1).replace(/\.0$/, "") + "K";
+  else s = (Math.round(v * 100) / 100).toLocaleString("en-US");
+  if (/^(\$|usd|dollars?)$/i.test(u)) return (v < 0 ? "−$" + s.replace("-", "") : "$" + s);
+  if (u === "%" || /^percent/i.test(u)) return s + "%";
+  return u && u.length <= 8 ? s + " " + u : s;
+}
+function wrap(t, max, lines){
+  const w = String(t || "").split(/\s+/); const out = []; let cur = "";
+  w.forEach(x => { if ((cur + " " + x).trim().length > max) { if (cur) out.push(cur); cur = x; } else cur = (cur + " " + x).trim(); });
+  if (cur) out.push(cur);
+  if (out.length > lines) { out.length = lines; out[lines - 1] = out[lines - 1].replace(/.{0,2}$/, "…"); }
+  return out;
+}
+const TX = (x, y, lines, o) => `<text x="${x}" y="${y}" text-anchor="${o.a || "middle"}" font-size="${o.s || 13}" font-weight="${o.w || 600}" fill="${o.c || "#eef2f8"}" font-family="Inter,system-ui,sans-serif">${lines.map((l, i) => `<tspan x="${x}" dy="${i ? (o.lh || (o.s || 13) + 3) : 0}">${esc(l)}</tspan>`).join("")}</text>`;
+
+function renderDiagram(sc){
+  const k = sc.kind;
+  if (k === "bars") return svgBars(sc);
+  if (k === "waterfall") return svgWaterfall(sc);
+  if (k === "flow") return svgFlow(sc);
+  if (k === "cycle") return svgCycle(sc);
+  if (k === "scale") return svgScale(sc) + cmpHTML(sc, true);
+  if (k === "compare") return cmpHTML(sc, false);
+  if (k === "formula") return `<div class="eq">${esc(sc.equation || sc.title)}</div><div class="exrows">${(sc.example || []).map(r => `<div class="exrow"><span>${esc(r.label)}</span><b>${esc(r.value)}</b></div>`).join("")}</div>`;
+  return ptsHTML(sc);
+}
+function ptsHTML(sc){
+  const pts = sc.points && sc.points.length ? sc.points : (sc.steps || []).map(s => ({ icon:"•", head:s.label, text:s.note }));
+  return `<div class="pts">${pts.map(p => `<div class="pt"><div class="i">${esc(p.icon || "💡")}</div><b>${esc(p.head)}</b><span>${esc(p.text || "")}</span></div>`).join("")}</div>`;
+}
+function cmpHTML(sc, scale){
+  const L = sc.left || { heading:"Option A", points:[] }, R = sc.right || { heading:"Option B", points:[] };
+  const wl = scale && sc.lean === "left", wr = scale && sc.lean === "right";
+  return `<div class="cmp"><div class="col L ${wl ? "win" : ""}"><h5>${esc(L.heading)}${wl ? " ✓" : ""}</h5><ul>${(L.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>
+    <div class="col R ${wr ? "win" : ""}"><h5>${esc(R.heading)}${wr ? " ✓" : ""}</h5><ul>${(R.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div></div>`;
+}
+function svgBars(sc){
+  const items = (sc.items || []).filter(i => isFinite(i.value)).slice(0, 7);
+  if (!items.length) return ptsHTML(sc);
+  const W = 640, H = 300, top = 30, base = 240, left = 30, right = 610;
+  const max = Math.max(...items.map(i => Math.abs(i.value)), 1);
+  const slot = (right - left) / items.length, bw = Math.min(70, slot * 0.6);
+  const cols = ["#e8c478", "#5fc4b8", "#7fa8e8", "#ef8a74", "#b9a3ef", "#8fd18f", "#f2a65a"];
+  let g = `<line x1="${left}" y1="${base}" x2="${right}" y2="${base}" stroke="#3a4c70" stroke-width="2"/>`;
+  items.forEach((it, i) => {
+    const h = Math.max(2, Math.abs(it.value) / max * (base - top - 24));
+    const x = left + slot * i + (slot - bw) / 2, y = base - h;
+    g += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="6" fill="${cols[i % cols.length]}"/>`;
+    g += TX(x + bw / 2, y - 8, [fmt(it.value, sc.unit)], { s:14, w:800 });
+    g += TX(x + bw / 2, base + 18, wrap(it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12.5, c:"#c9d4e5" });
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
+}
+function svgWaterfall(sc){
+  const items = (sc.items || []).filter(i => isFinite(i.value)).slice(0, 7);
+  if (!items.length) return ptsHTML(sc);
+  const W = 640, H = 300, top = 34, base = 236, left = 24, right = 616;
+  // Running totals: totals reset the level; deltas move it up or down
+  let run = 0; const bars = [];
+  items.forEach((it, i) => {
+    const isTotal = it.kind === "total" || i === 0;
+    if (isTotal) { bars.push({ it, from:0, to:it.value, total:true }); run = it.value; }
+    else { bars.push({ it, from:run, to:run + it.value, total:false }); run += it.value; }
+  });
+  const hi = Math.max(...bars.map(b => Math.max(b.from, b.to)), 1), lo = Math.min(0, ...bars.map(b => Math.min(b.from, b.to)));
+  const yv = v => top + 18 + (hi - v) / (hi - lo || 1) * (base - top - 18);
+  const slot = (right - left) / bars.length, bw = Math.min(64, slot * 0.62);
+  let g = `<line x1="${left}" y1="${yv(0)}" x2="${right}" y2="${yv(0)}" stroke="#3a4c70" stroke-width="2"/>`;
+  bars.forEach((b, i) => {
+    const x = left + slot * i + (slot - bw) / 2;
+    const y1 = yv(Math.max(b.from, b.to)), y2 = yv(Math.min(b.from, b.to));
+    const col = b.total ? "#e8c478" : (b.to >= b.from ? "#5fc4b8" : "#ef8a74");
+    g += `<rect x="${x}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="5" fill="${col}"/>`;
+    if (i + 1 < bars.length) { const ny = yv(b.to); g += `<line x1="${x + bw}" y1="${ny}" x2="${x + slot}" y2="${ny}" stroke="#7d8ca6" stroke-dasharray="4 4"/>`; }
+    const val = b.total ? fmt(b.it.value, sc.unit) : (b.it.value >= 0 ? "+" : "") + fmt(b.it.value, sc.unit);
+    g += TX(x + bw / 2, y1 - 8, [val], { s:13.5, w:800 });
+    g += TX(x + bw / 2, base + 22, wrap(b.it.label, Math.max(8, Math.floor(slot / 8)), 2), { s:12, c:"#c9d4e5" });
+  });
+  return `<svg viewBox="0 0 ${W} ${H + 10}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
+}
+function svgFlow(sc){
+  const steps = (sc.steps || []).slice(0, 6);
+  if (!steps.length) return ptsHTML(sc);
+  const perRow = steps.length <= 3 ? steps.length : Math.ceil(steps.length / 2);
+  const rows = Math.ceil(steps.length / perRow);
+  const W = 640, bw = Math.min(170, (W - 40 - (perRow - 1) * 36) / perRow), bh = 112, gapX = (W - 40 - bw * perRow) / Math.max(1, perRow - 1);
+  const H = rows * (bh + 40) + 10;
+  let g = `<defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8c478"/></marker></defs>`;
+  steps.forEach((s, i) => {
+    const r = Math.floor(i / perRow), c = i % perRow;
+    const x = 20 + c * (bw + (perRow > 1 ? gapX : 0)), y = 10 + r * (bh + 40);
+    g += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="12" fill="#111b30" stroke="${i === 0 ? "#e8c478" : "#3a4c70"}" stroke-width="2"/>`;
+    g += `<circle cx="${x + 20}" cy="${y + 20}" r="13" fill="#e8c478"/>` + TX(x + 20, y + 25, [String(i + 1)], { s:13, w:800, c:"#1a1405" });
+    g += TX(x + bw / 2 + 10, y + 26, wrap(s.label, Math.floor(bw / 9.5), 2), { s:14, w:800 });
+    g += TX(x + bw / 2, y + 66, wrap(s.note, Math.floor(bw / 7.2), 3), { s:12, w:500, c:"#c9d4e5", lh:15 });
+    if (i + 1 < steps.length) {
+      if (c + 1 < perRow) g += `<line x1="${x + bw + 3}" y1="${y + bh / 2}" x2="${x + bw + gapX - 5}" y2="${y + bh / 2}" stroke="#e8c478" stroke-width="2.5" marker-end="url(#ar)"/>`;
+      else g += `<path d="M${x + bw / 2} ${y + bh + 3} L${x + bw / 2} ${y + bh + 20} L${20 + bw / 2} ${y + bh + 20} L${20 + bw / 2} ${y + bh + 36}" fill="none" stroke="#e8c478" stroke-width="2.5" marker-end="url(#ar)"/>`;
+    }
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
+}
+function svgCycle(sc){
+  const steps = (sc.steps || []).slice(0, 6);
+  if (steps.length < 3) return svgFlow(sc);
+  const W = 640, H = 340, cx = 320, cy = 168, rx = 220, ry = 118, n = steps.length;
+  let g = `<defs><marker id="ac" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8c478"/></marker></defs>`;
+  g += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#3a4c70" stroke-width="2" stroke-dasharray="6 6"/>`;
+  const pt = i => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; };
+  for (let i = 0; i < n; i++) {
+    const a1 = -Math.PI / 2 + (i + 0.3) * 2 * Math.PI / n, a2 = -Math.PI / 2 + (i + 0.7) * 2 * Math.PI / n;
+    g += `<path d="M${cx + rx * Math.cos(a1)} ${cy + ry * Math.sin(a1)} A ${rx} ${ry} 0 0 1 ${cx + rx * Math.cos(a2)} ${cy + ry * Math.sin(a2)}" fill="none" stroke="#e8c478" stroke-width="3" marker-end="url(#ac)"/>`;
+  }
+  steps.forEach((s, i) => {
+    const [x, y] = pt(i), bw = 150, bh = 62;
+    g += `<rect x="${x - bw / 2}" y="${y - bh / 2}" width="${bw}" height="${bh}" rx="12" fill="#111b30" stroke="#5fc4b8" stroke-width="2"/>`;
+    g += TX(x, y - 8, wrap(s.label, 17, 1), { s:13.5, w:800 });
+    g += TX(x, y + 10, wrap(s.note, 24, 2), { s:11, w:500, c:"#c9d4e5", lh:13 });
+  });
+  g += TX(cx, cy + 4, wrap(sc.title, 22, 2), { s:15, w:800, c:"#e8c478", lh:18 });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sc.title)}">${g}</svg>`;
+}
+function svgScale(sc){
+  const tilt = sc.lean === "left" ? -9 : sc.lean === "right" ? 9 : 0;
+  const L = (sc.left && sc.left.heading) || "A", R = (sc.right && sc.right.heading) || "B";
+  let g = `<polygon points="320,170 296,215 344,215" fill="#e8c478"/><rect x="250" y="215" width="140" height="10" rx="4" fill="#5a3a22"/>`;
+  g += `<g transform="rotate(${tilt} 320 168)"><rect x="110" y="162" width="420" height="10" rx="5" fill="#c9d4e5"/>
+    <line x1="150" y1="167" x2="150" y2="110" stroke="#c9d4e5" stroke-width="2"/><line x1="490" y1="167" x2="490" y2="110" stroke="#c9d4e5" stroke-width="2"/>
+    <rect x="80" y="70" width="140" height="44" rx="10" fill="#5fc4b8"/><rect x="420" y="70" width="140" height="44" rx="10" fill="#ef8a74"/>
+    ${TX(150, 97, wrap(L, 16, 1), { s:14, w:800, c:"#0d1526" })}${TX(490, 97, wrap(R, 16, 1), { s:14, w:800, c:"#0d1526" })}</g>`;
+  return `<svg viewBox="0 0 640 235" role="img" aria-label="${esc(sc.title)}" style="max-height:200px">${g}</svg>`;
+}
+
+// ===================== YOUR TURN: MOVES, CLARIFYING QUESTIONS, NOTES =====================
+// The big answer box is always there. Moves: Interrupt, Question (one exec, anyone or everyone), Explain That, Push Back, Call a Vote.
+let jumpTarget = "", jumpMode = "question", lastPrompts = [];
+function speakerNow(){ const l = $("people").querySelector(".person.live"); return l ? l.dataset.who : null; }
+function setJump(on, prompts, clarify){
+  if (prompts) lastPrompts = prompts;
+  const m = S.mode, meet = m === "meeting";
+  const live = S.busy;
+  const execName = r => ROLES[r] ? ROLES[r].name : "presenter";
+  // Moves bar
+  const mv = [];
+  mv.push(`<button class="move ${jumpMode === "interrupt" ? "on" : ""}" id="mvInt" type="button" ${live ? "" : "disabled"} title="Stop the speaker and say your piece">✋ Interrupt</button>`);
+  mv.push(`<button class="move ${jumpMode === "question" ? "on" : ""}" id="mvQ" type="button">❓ Question</button>`);
+  mv.push(`<button class="move" id="mvExp" type="button" ${S.lastRole && !S.busy ? "" : "disabled"} title="Say that last point more simply">🔍 Explain That</button>`);
+  if (meet) {
+    mv.push(`<button class="move" id="mvPush" type="button" ${S.lastRole && !S.busy ? "" : "disabled"} title="Another executive challenges the last point">⚔️ Push Back</button>`);
+    mv.push(`<button class="move" id="mvVote" type="button" ${!S.busy ? "" : "disabled"} title="Each executive votes yes or no">🗳️ Call a Vote</button>`);
+  }
+  $("moves").innerHTML = mv.join("");
+  $("mvInt").onclick = () => { S.interrupted = speakerNow(); if (speaking && !paused) $("pauseBtn").click(); jumpMode = "interrupt"; setJump(false); $("jumpIn").focus(); };
+  $("mvQ").onclick = () => { jumpMode = "question"; setJump(!S.busy); $("jumpIn").focus(); };
+  $("mvExp").onclick = () => meet ? meetingStep("explain") : followUp("Explain that last point more simply, with an everyday example.", true);
+  if ($("mvPush")) $("mvPush").onclick = () => meetingStep("pushback");
+  if ($("mvVote")) $("mvVote").onclick = () => meetingStep("vote");
+
+  // Clarifying question from the board
+  const c = clarify !== undefined ? clarify : S.clarify;
+  S.clarify = on ? c : (clarify === undefined ? S.clarify : c);
+  if (on && S.clarify) {
+    const who = S.clarify.role && S.clarify.role !== "chair" && ROLES[S.clarify.role] ? "The " + ROLES[S.clarify.role].name : S.clarify.role === "chair" ? "Mr. Paul" : "The board";
+    $("clar").innerHTML = `<b>🙋 ${esc(who)} asks:</b> ${esc(S.clarify.question)}<div>${(S.clarify.choices || []).map(x => `<button class="qchip" type="button">${esc(x)}</button>`).join("")}</div>`;
+    $("clar").classList.remove("hide");
+    $("clar").querySelectorAll(".qchip").forEach(b => b.onclick = () => { $("jumpIn").value = b.textContent; $("jumpGo").click(); });
+  } else $("clar").classList.add("hide");
+
+  // Label, hint and "To:" chips
+  if (jumpMode === "interrupt") {
+    $("jLab").textContent = `✋ Interrupting${S.interrupted && ROLES[S.interrupted] ? " the " + ROLES[S.interrupted].name : S.interrupted === "chair" ? " Mr. Paul" : ""}`;
+    $("jHint").textContent = "Say your piece, then Send. Or tap ▶ Continue Audio to let them finish.";
+    $("targets").innerHTML = "";
+  } else if (on && S.clarify) {
+    $("jLab").textContent = "Your answer";
+    $("jHint").textContent = "Type or tap 🎤 and talk, or tap one of the answers above.";
+    $("targets").innerHTML = "";
+  } else if (meet) {
+    $("jLab").textContent = on ? "Your turn" : "Jump in anytime";
+    $("jHint").textContent = on ? "Ask a question or make a point. Type, or tap 🎤 and talk." : "Typing or talking pauses the room so you can speak.";
+    const opts = [["", "Anyone"], ["all", "Everyone"]].concat(S.seats.map(s => [s.role, ROLES[s.role].name]));
+    $("targets").innerHTML = `<span class="note" style="margin:0 4px 0 0;align-self:center">To:</span>` + opts.map(([k, n]) => `<button class="chip ${jumpTarget === k ? "on" : ""}" data-t="${k}" type="button">${esc(n)}</button>`).join("");
+    $("targets").querySelectorAll(".chip").forEach(b => b.onclick = () => { jumpTarget = b.dataset.t; setJump(on); });
+  } else {
+    $("jLab").textContent = on ? "Ask a follow-up" : "Questions?";
+    $("jHint").textContent = on ? `Ask the ${execName(S.presenter)} to go deeper. Type, or tap 🎤 and talk.` : "Type anytime. It pauses the briefing so you can ask.";
+    $("targets").innerHTML = "";
+  }
+
+  // Next steps
+  const A = [];
+  if (meet && on) {
+    if (S.rounds < 6) A.push(`<button class="act" id="aNext" type="button">▶ Keep the meeting going</button>`);
+    A.push(`<button class="act gold" id="aClose" type="button">🔨 Close the meeting (Chair's Takeaway)</button>`);
+    if (S.rounds >= 6) $("jHint").textContent = "Great meeting! Time for the Chair to wrap it up, or ask one more question.";
+  }
+  if (!meet && on) { A.push(`<button class="act" id="aMeet" type="button">🗣️ Turn this into a meeting</button>`); A.push(`<button class="act" id="aNew" type="button">↺ New topic</button>`); }
+  if (S.history.length) A.push(`<button class="act" id="aDl" type="button">⬇ Download notes</button>`);
+  $("acts").innerHTML = A.join("");
+  if ($("aNext")) $("aNext").onclick = () => meetingStep("next");
+  if ($("aClose")) $("aClose").onclick = () => meetingStep("close");
+  if ($("aMeet")) $("aMeet").onclick = turnIntoMeeting;
+  if ($("aNew")) $("aNew").onclick = () => showSetup();
+  if ($("aDl")) $("aDl").onclick = downloadNotes;
+  const pr = on && !S.clarify ? lastPrompts : [];
+  $("prompts").innerHTML = pr && pr.length ? pr.map(p => `<button class="qchip" type="button">💬 ${esc(p)}</button>`).join("") : "";
+  $("prompts").querySelectorAll(".qchip").forEach(b => b.onclick = () => { $("jumpIn").value = b.textContent.replace(/^💬\s*/, ""); $("jumpGo").click(); });
+}
+// Typing while someone is talking pauses the room and counts as an interruption
+$("jumpIn").addEventListener("focus", () => {
+  if (speaking && !paused && S.busy) { S.interrupted = speakerNow(); $("pauseBtn").click(); jumpMode = "interrupt"; setJump(false); }
+});
+$("jumpIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("jumpGo").click(); } });
+$("jumpGo").onclick = () => {
+  const t = $("jumpIn").value.trim(); if (!t) { $("jumpIn").focus(); return; }
+  $("jumpIn").value = "";
+  const mode = jumpMode; jumpMode = "question";
+  if (S.mode === "meeting") meetingStep(mode === "interrupt" ? "interrupt" : "user", t);
+  else followUp(t);
+};
+async function meetingStep(step, userText){
+  const interrupted = S.interrupted; S.interrupted = null;
+  S.token++; stopVoice();
+  S.busy = true; S.clarify = null; setJump(false, [], null); $("acts").innerHTML = ""; $("prompts").innerHTML = "";
+  if (userText) { S.history.push({ who:"user", text:userText }); logRow("user", userText); paintCaption(userText.split(/\s+/).map(w => ({ w, t:null })), "user"); }
+  const msgs = { close:"Mr. Paul is writing the Chair's Takeaway…", explain:"Putting that more simply…", pushback:"Someone's about to push back…", vote:"Mr. Paul is calling the vote…", interrupt:"The room heard you. One moment…", user:"The room is thinking about your point…", next:"The room is picking it back up…" };
+  think(msgs[step] || "One moment…");
+  const body = Object.assign({ part:"meeting", step, table:S.table, level:S.level, topic:S.topic, category:S.category, seats:S.seats, history:S.history, userText, target:jumpTarget, interrupted, lastRole:S.lastRole }, ctx(false));
+  try {
+    const j = await post("/api/boardroom", body, 90000);
+    if (step === "close") {
+      S.takeaway = j;
+      await playBatch([{ who:"chair", text:j.chair, screen:j.screen }], [], null);
+      showAdjourn(j);
+      return;
+    }
+    if (j.ok === false) { await playBatch([{ who:"chair", text:j.decline || "Let's keep it to business and money." }], [], null); return; }
+    takeNotes(j);
+    if (["next", "user", "interrupt"].includes(step)) S.rounds++;
+    const beats = [];
+    let screen = j.screen;
+    if (step === "vote" && j.votes && j.votes.length) {
+      const yes = j.votes.filter(v => v.vote === "yes").length, no = j.votes.filter(v => v.vote === "no").length, dep = j.votes.length - yes - no;
+      screen = { kind:"points", title:`The vote: ${yes} yes · ${no} no${dep ? " · " + dep + " depends" : ""}`, caption: j.chair || "The board votes.", points: j.votes.map(v => ({ icon: v.vote === "yes" ? "✅" : v.vote === "no" ? "❌" : "🤔", head: `${ROLES[v.role].name}: ${v.vote === "depends" ? "It depends" : v.vote === "yes" ? "Yes" : "No"}`, text: v.reason })), terms: (j.screen && j.screen.terms) || [] };
+      S.votes.push({ question: j.chair || S.topic, votes: j.votes });
+    }
+    if (j.chair) beats.push({ who:"chair", text:j.chair, screen });
+    j.lines.forEach((l, i) => beats.push({ who:l.role, text:l.text, screen: (!j.chair && i === 0) ? screen : null }));
+    await playBatch(beats, j.next_prompts, j.clarify);
+  } catch(e) {
+    think(false); S.busy = false;
+    $("caption").innerHTML = `<span class="ph">${esc(errText(e))}</span>`;
+    setJump(true, [], null);
+  }
+}
+function showAdjourn(j){
+  const A = $("adjourn");
+  A.innerHTML = `<h3>🔨 Meeting adjourned</h3><div class="note" style="margin:0">Chair's Takeaway</div>
+    <ul>${(j.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul>
+    <div class="lesson">💡 ${esc(j.lesson || "")}</div>
+    <div class="acts"><button class="act gold" id="adDl" type="button">⬇ Download meeting notes</button><button class="act" id="adNew" type="button">↺ New meeting</button><button class="act" id="adBrief" type="button">🎤 Get a briefing on this</button></div>`;
+  A.classList.remove("hide");
+  $("adDl").onclick = downloadNotes;
+  $("adNew").onclick = () => showSetup();
+  $("adBrief").onclick = () => { S.room = "briefing"; S.briefRole[S.table] = S.seats[0].role; begin(S.topic, S.category); };
+  setJump(true, [], null);
+  A.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+async function followUp(q, quiet){
+  S.token++; stopVoice();
+  S.busy = true; S.clarify = null; setJump(false, [], null);
+  if (!quiet) { S.history.push({ who:"user", text:q }); logRow("user", q); paintCaption(q.split(/\s+/).map(w => ({ w, t:null })), "user"); }
+  think(quiet ? "Putting that more simply…" : "The " + (ROLES[S.presenter] ? ROLES[S.presenter].name : "presenter") + " is working on your question…");
+  try {
+    const j = await post("/api/boardroom", Object.assign({ part:"briefing", table:S.table, level:S.level, role:S.presenter, persona:S.pref[S.presenter] ? S.pref[S.presenter].p : "steady", topic:S.topic, followup:q, history:S.history }, ctx(false)), 90000);
+    if (j.ok === false) { await playBatch([{ who:S.presenter, text:j.decline || "Let's keep it to business and money." }], [], null); return; }
+    takeNotes(j);
+    await playBatch(j.slides.map(s => ({ who:S.presenter, text:s.say, screen:s.screen })), j.next_prompts, j.clarify);
+  } catch(e) { think(false); S.busy = false; $("caption").innerHTML = `<span class="ph">${esc(errText(e))}</span>`; setJump(true, [], null); }
+}
+function turnIntoMeeting(){
+  const t = S.table;
+  const others = SEATS[t].filter(r => r !== S.presenter);
+  S.picked[t] = [S.presenter, others[0]].concat(others[1] ? [others[1]] : []).sort((a, b) => SEATS[t].indexOf(a) - SEATS[t].indexOf(b));
+  S.room = "meeting";
+  begin(S.title && S.title.length > 3 ? S.title : S.topic, S.category || "From a briefing");
+}
+
+// ----- Download notes: a printable page with the summary and the full transcript -----
+function downloadNotes(){
+  const kind = S.mode === "meeting" ? "Meeting" : S.mode === "ask" ? "Ask the Room" : "Executive Briefing";
+  const when = new Date().toLocaleString("en-US", { dateStyle:"long", timeStyle:"short" });
+  const who = S.mode === "meeting" ? ["Mr. Paul (Chair)"].concat(S.seats.map(s => ROLES[s.role].name + " · " + (PERSONAS.find(x => x.k === s.persona) || PERSONAS[0]).label)) : [ROLES[S.presenter] ? ROLES[S.presenter].name : "Presenter"];
+  const brief = briefText();
+  const T = S.takeaway;
+  let summary = "";
+  if (T) summary = `<h2>Chair's Takeaway</h2><ul>${(T.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul><p class="lesson">💡 ${esc(T.lesson || "")}</p>`;
+  else {
+    const heads = S.screens.map(sc => sc && sc.title).filter(Boolean);
+    summary = `<h2>Summary</h2>${S.mode === "meeting" ? `<p class="soft">This meeting wasn't formally closed, so here are the topics covered on the wall screen.</p>` : ""}<ul>${heads.map(h => `<li>${esc(h)}</li>`).join("")}</ul>`;
+  }
+  const votes = S.votes.length ? `<h2>Votes</h2>${S.votes.map(v => `<p><b>${esc(v.question)}</b></p><ul>${v.votes.map(x => `<li>${esc(ROLES[x.role].name)}: ${x.vote === "depends" ? "It depends" : x.vote === "yes" ? "Yes" : "No"}. ${esc(x.reason)}</li>`).join("")}</ul>`).join("")}` : "";
+  const terms = []; S.screens.forEach(sc => (sc && sc.terms || []).forEach(t => { if (!terms.find(x => x.word.toLowerCase() === t.word.toLowerCase())) terms.push(t); }));
+  const termsHTML = terms.length ? `<h2>Key terms</h2><dl>${terms.map(t => `<dt>${esc(t.word)}</dt><dd>${esc(t.meaning)}</dd>`).join("")}</dl>` : "";
+  const transcript = S.history.map(h => `<p class="line ${h.who === "user" ? "you" : ""}"><b>${esc(nameOf(h.who))}:</b> ${esc(h.text)}</p>`).join("");
+  const doc = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Boardroom: ${esc(S.title || S.topic)}</title>
+<style>body{font-family:Georgia,'Times New Roman',serif;color:#1b1b1b;max-width:760px;margin:30px auto;padding:0 20px;line-height:1.55}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;border-bottom:2px solid #c99a3e;padding-bottom:4px;margin-top:28px}.meta{font-family:Arial,sans-serif;color:#555;font-size:14px}.box{font-family:Arial,sans-serif;background:#f7f2e8;border:1px solid #e3d5b8;border-radius:8px;padding:10px 14px;font-size:14px;white-space:pre-wrap}.lesson{font-weight:bold;background:#fff8e6;border-left:4px solid #c99a3e;padding:8px 12px}.line{margin:8px 0}.line.you b{color:#0a6b62}.soft{color:#666}dt{font-weight:bold;margin-top:8px}dd{margin:2px 0 0 0}.foot{font-family:Arial,sans-serif;font-size:12px;color:#777;margin-top:30px;border-top:1px solid #ddd;padding-top:10px}.pb{font-family:Arial,sans-serif;background:#c99a3e;color:#fff;border:0;border-radius:6px;padding:8px 14px;font-weight:bold;cursor:pointer}@media print{.pb{display:none}}</style></head><body>
+<button class="pb" onclick="window.print()">🖨️ Print / Save as PDF</button>
+<p class="meta">THE BOARDROOM · Learn...Wow! · nusparklearnwow.com</p>
+<h1>${esc(S.title || S.topic)}</h1>
+<p class="meta">${esc(kind)} · ${S.table === "corporate" ? "Corporate Table" : "Main Street Table"} · ${S.level === "starter" ? "Starter" : "Executive"} level · ${esc(when)}</p>
+<p class="meta"><b>Topic:</b> ${esc(S.topic)}<br><b>At the table:</b> ${who.map(esc).join(", ")}${S.docName ? `<br><b>Reviewed:</b> ${esc(S.docName)}` : ""}</p>
+${brief ? `<h2>Company brief</h2><div class="box">${esc(brief)}</div>` : ""}
+${summary}${votes}${termsHTML}
+<h2>Full transcript</h2>${transcript}
+<p class="foot">Example numbers in The Boardroom are made up for teaching unless they came from your own document. This was a learning discussion, not financial, legal or tax advice. For your own situation, talk with a licensed professional.</p>
+</body></html>`;
+  const slug = (S.title || S.topic || "meeting").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "meeting";
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([doc], { type:"text/html" }));
+  a.download = `boardroom-${slug}.html`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+
+// ===================== MIC =====================
+// Tap 🎤 and talk: your words appear in the box. If this browser can't turn speech into text,
+// the button opens the keyboard instead (every phone keyboard has its own 🎤).
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function wireMic(btnId, inputId, after){
+  let rec = null, on = false;
+  $(btnId).onclick = () => {
+    const box = $(inputId);
+    if (!SR) { box.focus(); return; }
+    if (on) { try { rec.stop(); } catch(e){} return; }
+    if (speaking && !paused) $("pauseBtn").click();
+    rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1;
+    const before = box.value;
+    rec.onresult = ev => { let t = ""; for (let i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript; box.value = (before ? before + " " : "") + t; };
+    rec.onend = () => { on = false; $(btnId).classList.remove("listening"); $(btnId).textContent = "🎤"; if (after && box.value.trim() && box.value.trim() !== before.trim()) after(); };
+    rec.onerror = () => { on = false; $(btnId).classList.remove("listening"); $(btnId).textContent = "🎤"; };
+    try { rec.start(); on = true; $(btnId).classList.add("listening"); $(btnId).textContent = "■"; } catch(e) {}
+  };
+}
+wireMic("micTopic", "ownTopic", null);
+wireMic("micChallenge", "bChallenge", () => { BR[S.table].challenge = $("bChallenge").value; briefTag(); });
+wireMic("micExtra", "bExtra", () => { BR[S.table].extra = $("bExtra").value; briefTag(); });
+wireMic("micAsk", "askIn", null);
+wireMic("micJump", "jumpIn", () => $("jumpGo").click());
+
+// ===================== START =====================
+setLevel(S.level);
+setTable(S.table);
+</script>
+</body>
+</html>
