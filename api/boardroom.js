@@ -132,7 +132,7 @@ const BRIEF_TOOL = {
       decline: { type: "string", description: "If ok is false: a friendly redirect with a business topic idea." },
       role: { type: "string", enum: Object.keys(ROLES), description: "Who presents (for Ask the Room, pick the seat best suited to answer)." },
       title: { type: "string", description: "Briefing title, under 60 characters." },
-      slides: { type: "array", minItems: 1, maxItems: 4, items: { type: "object", properties: { say: { type: "string", description: "What the executive says on this slide." }, screen: SCREEN }, required: ["say", "screen"] } },
+      slides: { type: "array", minItems: 1, maxItems: 4, items: { type: "object", properties: { say: { type: "string", description: "What the executive says on this slide." }, note: { type: "string", description: "The slide's key point as a short sticky note for the Meeting notes board, under 12 words." }, screen: SCREEN }, required: ["say", "note", "screen"] } },
       next_prompts: { type: "array", maxItems: 6, items: { type: "string" }, description: "6 short, varied follow-up questions (under 10 words each): mix why, how, what-if, numbers and real-life examples." },
       clarify: CLARIFY,
       doc_notes: DOC_NOTES
@@ -332,10 +332,10 @@ SLIDES: ${b.followup ? "1-2 slides answering the follow-up" : isAsk ? "2-3 slide
   else ask = `Briefing topic: "${clip(b.topic, 300)}"${b.category ? ` (category: ${clip(b.category, 60)})` : ""}. Decide ok first.`;
   if (hasDoc(b) && !b.followup) ask += " The viewer attached material for review (above).";
   const content = docBlocks(b.doc).concat([{ type: "text", text: ask }]);
-  const out = await tryTwice(m => callTool(sys, BRIEF_TOOL, content, 3000, j => j.ok === false ? !!j.decline : (Array.isArray(j.slides) && j.slides.length > 0), m));
+  const out = await tryTwice(m => callTool(sys, BRIEF_TOOL, content, 5000, j => j.ok === false ? !!j.decline : (Array.isArray(j.slides) && j.slides.length > 0), m));
   if (out.ok === false) return { ok: false, decline: clip(out.decline, 400) };
   out.role = role || (ROLES[out.role] && ROLES[out.role].table === table ? out.role : seatList[0][0]);
-  out.slides = out.slides.slice(0, 4).map(s => ({ say: clip(s.say, 1000), screen: cleanScreen(s.screen) }));
+  out.slides = out.slides.slice(0, 4).map(s => ({ say: clip(s.say, 1000), note: clip(s.note, 90), screen: cleanScreen(s.screen) }));
   out.title = clip(out.title, 80);
   out.next_prompts = (out.next_prompts || []).map(p => clip(p, 80)).slice(0, 6);
   out.clarify = cleanClarify(out.clarify, [out.role]);
