@@ -228,7 +228,20 @@ h1,h2,h3{margin:0}
 .wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}
 @keyframes wv{0%,100%{height:5px}50%{height:18px}}
 @media(max-width:560px){.person .plate{font-size:11.5px;padding:3px 6px;left:4px;right:4px;bottom:4px}.person .plate small{display:none}.person.chair svg{width:70%;margin-bottom:20px}}
-.caption{background:var(--wall);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:110px;font-size:17px;line-height:1.55}
+.caption{background:var(--wall);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:110px;font-size:var(--capfs,18px);line-height:1.55}
+.tablebox .caption{flex:1}
+.fsgrp{display:flex;align-items:center;gap:4px;font-size:13.5px;color:var(--muted);font-weight:600}
+.fsgrp button{min-width:38px}
+/* One presenter: small photo beside the name, more room for the words and the wall screen */
+.roomgrid.solo{grid-template-columns:minmax(0,.82fr) minmax(0,1.5fr)}
+.roomgrid.solo .people{grid-template-columns:1fr}
+.roomgrid.solo .person{display:flex;align-items:center;gap:12px;padding:8px;opacity:1}
+.roomgrid.solo .person img{width:96px;height:96px;aspect-ratio:auto;border-radius:10px;flex:none}
+.roomgrid.solo .person .plate{position:static;background:none!important;color:var(--ink)!important;font-size:17px;padding:0}
+.roomgrid.solo .person .plate small{display:block!important;color:var(--muted)!important;font-size:13.5px}
+.roomgrid.solo .person.live{transform:none}
+.roomgrid.solo .caption{min-height:260px}
+@media(max-width:900px){.roomgrid.solo{grid-template-columns:1fr}.roomgrid.solo .caption{min-height:140px}}
 .caption .spk{color:var(--gold);font-weight:800;margin-right:6px}
 .caption .w{transition:color .1s}
 .caption.speaking .w{color:#8091ab}
@@ -504,7 +517,7 @@ h1,h2,h3{margin:0}
       <div class="badges" id="agBadges"></div>
     </div>
 
-    <div class="roomgrid">
+    <div class="roomgrid" id="roomgrid">
       <div class="tablebox">
         <div class="people" id="people"></div>
         <div class="thinking" id="thinking"><div class="dots"><span></span><span></span><span></span></div><span id="thinkMsg">The room is thinking…</span></div>
@@ -513,6 +526,7 @@ h1,h2,h3{margin:0}
           <button class="cbtn" id="replayBtn" type="button" disabled>⏮ Replay</button>
           <button class="cbtn" id="muteBtn" type="button" aria-pressed="false">🔇 Mute</button>
           <label class="rategrp">Voice speed <input type="range" id="rate" min="0.75" max="1.3" step="0.05" value="1"> <span id="rateVal">1×</span></label>
+          <span class="fsgrp">Text <button class="cbtn" id="fsDown" type="button" title="Smaller text">A−</button><button class="cbtn" id="fsUp" type="button" title="Bigger text">A+</button></span>
         </div>
       </div>
 
@@ -1089,7 +1103,7 @@ async function begin(topic, category, opt){
     S.title = opt.title || j.title || topic;
     paintAgenda(kindLabel, S.title, isAsk ? topic : "");
     statusEl.textContent = "";
-    await playBatch(j.slides.map(s => ({ who:j.role, text:s.say, screen:s.screen })), j.next_prompts, j.clarify);
+    await playBatch(j.slides.map(s => ({ who:j.role, text:s.say, screen:s.screen, note:s.note })), j.next_prompts, j.clarify);
   } catch(e){ backToSetup(statusEl, errText(e), true); }
 }
 function backToSetup(statusEl, msg, isErr){
@@ -1128,6 +1142,7 @@ const MRPAUL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 380" ar
 function paintPeople(roles, withChair){
   const items = (withChair ? ["chair"] : []).concat(roles);
   $("people").style.setProperty("--n", Math.min(items.length, 4));
+  $("roomgrid").classList.toggle("solo", items.length === 1);
   $("people").innerHTML = items.map(r => r === "chair"
     ? `<div class="person chair" data-who="chair">${MRPAUL}<div class="wave"><i></i><i></i><i></i></div><div class="plate">Mr. Paul<small>The Chair</small></div></div>`
     : `<div class="person" data-who="${r}"><img src="${pic(r, S.pref[r].g)}" alt="${esc(ROLES[r].long)}"><div class="wave"><i></i><i></i><i></i></div><div class="plate">${esc(r === "pfa" ? "Financial Advisor" : ROLES[r].name)}<small>${esc((PERSONAS.find(x => x.k === S.pref[r].p) || PERSONAS[0]).label)}</small></div></div>`
@@ -1158,6 +1173,12 @@ $("rate").value = rate; $("rateVal").textContent = rateLabel();
 $("rate").oninput = () => { rate = parseFloat($("rate").value); $("rateVal").textContent = rateLabel(); store.set("br_rate", String(rate)); try { voiceEl.playbackRate = rate; } catch(e){} };
 
 let muted = store.get("br_muted", "0") === "1";
+// Caption text size (A− / A+), remembered on this device
+let capfs = parseInt(store.get("br_fs", "18"), 10) || 18;
+function paintFs(){ document.documentElement.style.setProperty("--capfs", capfs + "px"); $("fsDown").disabled = capfs <= 15; $("fsUp").disabled = capfs >= 28; }
+$("fsDown").onclick = () => { capfs = Math.max(15, capfs - 2); store.set("br_fs", String(capfs)); paintFs(); };
+$("fsUp").onclick = () => { capfs = Math.min(28, capfs + 2); store.set("br_fs", String(capfs)); paintFs(); };
+paintFs();
 function paintMute(){ $("muteBtn").textContent = muted ? "🔊 Sound on" : "🔇 Mute"; $("muteBtn").setAttribute("aria-pressed", muted ? "true" : "false"); }
 paintMute();
 $("muteBtn").onclick = () => { muted = !muted; store.set("br_muted", muted ? "1" : "0"); paintMute(); if (muted && speaking && !useTimer) { const pos = curWord; stopAudioOnly(); readAlong(pos); } };
@@ -1318,7 +1339,8 @@ async function playBatch(beats, prompts, clarify, opt){
     if (b.screen) showScreenObj(b.screen);
     S.hl = { who:b.who, side:(b.highlight && b.highlight.side) || "", items:(b.highlight && b.highlight.items) || [] };
     paintScreen();
-    if (b.note) addNote(b.who, b.note);
+    const nt = b.note || autoNote(b);
+    if (nt) addNote(b.who, nt);
     S.history.push({ who:b.who, text:b.text });
     if (b.who !== "chair" && b.who !== "user") S.lastRole = b.who;
     logRow(b.who, b.text);
@@ -1382,12 +1404,19 @@ function hasNumbers(sc){ return ["bars", "waterfall", "trend"].includes(sc.kind)
 // ----- Meeting Notes: each executive's key points as sticky notes -----
 const COLORS = { chair:"#e8c478", ceo:"#7fa8e8", cfo:"#5fc4b8", coo:"#ef8a74", growth:"#8fd18f", exit:"#b9a3ef", pfa:"#f2a65a", user:"#e8e8e8" };
 const roleColor = w => COLORS[w] || "#e8c478";
+// Backup: if the AI skipped a note, use the speaker's first sentence (short) so the board never sits empty.
+function autoNote(b){
+  if (!b || !b.text || b.who === "user" || b.who === "chair") return "";
+  let t = (String(b.text).match(/^[^.!?]+[.!?]?/) || [""])[0].trim();
+  if (t.length > 90) t = t.slice(0, 87).replace(/\s+\S*$/, "") + "…";
+  return t;
+}
 function addNote(who, text){ S.notes.push({ who, text }); if (wallTab !== "notes") $("noteCount").textContent = S.notes.length; else paintNotes(); }
 function paintNotes(){
   const N = S.notes || [];
   $("notesBoard").innerHTML = N.length
     ? `<div class="stickies">${N.map(n => `<div class="sticky" style="--c:${roleColor(n.who)}"><b>${esc(nameOf(n.who))}</b>${esc(n.text)}</div>`).join("")}</div>`
-    : `<div class="empty">📝 Each executive's key points stick here as the meeting goes.</div>`;
+    : `<div class="empty">📝 Each speaker's key points stick here as they talk.</div>`;
 }
 
 function fmt(v, unit){
@@ -1641,9 +1670,16 @@ function setJump(on, prompts, clarify){
   const A = [];
   if (meet && !S.closed) {
     const running = S.busy && !S.meetPaused;
-    A.push(running ? `<button class="act" id="aPause" type="button">⏸ Pause Meeting</button>` : `<button class="act gold" id="aGo" type="button">▶ Continue Meeting</button>`);
-    A.push(`<button class="act" id="aClose" type="button">🔨 Close the meeting now</button>`);
-    A.push(`<span class="note" style="align-self:center;margin:0">Round ${Math.min(S.rounds, S.maxRounds)} of ${S.maxRounds}${S.meetPaused ? " · paused" : ""}</span>`);
+    const atEnd = !S.busy && S.rounds >= S.maxRounds;
+    if (atEnd) {
+      A.push(`<button class="act gold" id="aMore" type="button">➕ Keep going (2 more rounds)</button>`);
+      A.push(`<button class="act" id="aClose" type="button">🔨 Close the meeting and get the takeaway</button>`);
+      A.push(`<span class="note" style="align-self:center;margin:0">Planned length done (round ${S.rounds}). Ask a question, keep going, or close.</span>`);
+    } else {
+      A.push(running ? `<button class="act" id="aPause" type="button">⏸ Pause Meeting</button>` : `<button class="act gold" id="aGo" type="button">▶ Continue Meeting</button>`);
+      A.push(`<button class="act" id="aClose" type="button">🔨 Close the meeting now</button>`);
+      A.push(`<span class="note" style="align-self:center;margin:0">Round ${Math.min(S.rounds, S.maxRounds)} of ${S.maxRounds}${S.meetPaused ? " · paused" : ""}</span>`);
+    }
   }
   if (!meet && on) { A.push(`<button class="act" id="aMeet" type="button">🗣️ Turn this into a meeting</button>`); A.push(`<button class="act" id="aNew" type="button">↺ New topic</button>`); }
   if (S.history.length) A.push(`<button class="act" id="aDl" type="button">⬇ Download notes</button>`);
@@ -1651,6 +1687,7 @@ function setJump(on, prompts, clarify){
   if ($("aPause")) $("aPause").onclick = pauseMeeting;
   if ($("aGo")) $("aGo").onclick = continueMeeting;
   if ($("aClose")) $("aClose").onclick = () => meetingStep("close");
+  if ($("aMore")) $("aMore").onclick = keepGoing;
   if ($("aMeet")) $("aMeet").onclick = turnIntoMeeting;
   if ($("aNew")) $("aNew").onclick = () => showSetup();
   if ($("aDl")) $("aDl").onclick = downloadNotes;
@@ -1712,7 +1749,13 @@ function lineBeat(l, baseScreen){ return { who:l.role, text:l.text, screen: l.sc
 // The meeting keeps going on its own until it's paused, you jump in, the board asks you something, or it reaches its length
 function autoNext(clarify){
   if (S.mode !== "meeting" || S.closed || clarify || S.meetPaused) { setJump(true); return; }
-  if (S.rounds >= S.maxRounds) return meetingStep("close");
+  // Planned length reached: don't end it on the user. Offer Keep going or Close.
+  if (S.rounds >= S.maxRounds) { setJump(true); return; }
+  meetingStep("next");
+}
+function keepGoing(){
+  S.maxRounds = Math.max(S.maxRounds, S.rounds) + 2;
+  S.meetPaused = false; S.clarify = null;
   meetingStep("next");
 }
 function startPrefetch(beats){
@@ -1791,10 +1834,11 @@ function showAdjourn(j){
   A.innerHTML = `<h3>🔨 Meeting adjourned</h3><div class="note" style="margin:0">Chair's Takeaway</div>
     <ul>${(j.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul>
     <div class="lesson">💡 ${esc(j.lesson || "")}</div>
-    <div class="acts"><button class="act gold" id="adDl" type="button">⬇ Download meeting notes</button><button class="act" id="adNew" type="button">↺ New meeting</button><button class="act" id="adBrief" type="button">🎤 Get a briefing on this</button></div>`;
+    <div class="acts"><button class="act gold" id="adDl" type="button">⬇ Download meeting notes</button><button class="act" id="adMore" type="button">➕ Reopen and keep going</button><button class="act" id="adNew" type="button">↺ New meeting</button><button class="act" id="adBrief" type="button">🎤 Get a briefing on this</button></div>`;
   A.classList.remove("hide");
   $("adDl").onclick = downloadNotes;
   $("adNew").onclick = () => showSetup();
+  $("adMore").onclick = () => { A.classList.add("hide"); S.closed = false; keepGoing(); };
   $("adBrief").onclick = () => { S.room = "briefing"; S.briefRole[S.table] = S.seats[0].role; begin(S.topic, S.category); };
   setJump(true, [], null);
   A.scrollIntoView({ behavior:"smooth", block:"center" });
@@ -1808,7 +1852,7 @@ async function followUp(q, quiet){
     const j = await post("/api/boardroom", Object.assign({ part:"briefing", table:S.table, level:S.level, role:S.presenter, persona:S.pref[S.presenter] ? S.pref[S.presenter].p : "steady", topic:S.topic, followup:q, history:S.history }, ctx(false)), 90000);
     if (j.ok === false) { await playBatch([{ who:S.presenter, text:j.decline || "Let's keep it to business and money." }], [], null); return; }
     takeNotes(j);
-    await playBatch(j.slides.map(s => ({ who:S.presenter, text:s.say, screen:s.screen })), j.next_prompts, j.clarify);
+    await playBatch(j.slides.map(s => ({ who:S.presenter, text:s.say, screen:s.screen, note:s.note })), j.next_prompts, j.clarify);
   } catch(e) { think(false); S.busy = false; $("caption").innerHTML = `<span class="ph">${esc(errText(e))}</span>`; setJump(true, [], null); }
 }
 function turnIntoMeeting(){
