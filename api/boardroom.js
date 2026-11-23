@@ -117,6 +117,7 @@ const CLOSE_TOOL = {
       chair: { type: "string", description: "Mr. Paul's spoken close, 3-4 sentences: thanks the room, says briefly where each executive landed, and ends with the one lesson to remember." },
       landed: { type: "array", items: { type: "object", properties: { role: { type: "string", enum: Object.keys(ROLES) }, view: { type: "string", description: "Where they landed, under 18 words." } }, required: ["role", "view"] } },
       lesson: { type: "string", description: "The one lesson to remember, under 22 words." },
+      plan: { type: "object", description: "A practical 30/60/90-day action plan that follows from what the room discussed, tailored to the viewer's brief if one was given. Each list has 2-3 short, concrete steps (under 16 words each), written as actions.", properties: { d30: { type: "array", items: { type: "string" } }, d60: { type: "array", items: { type: "string" } }, d90: { type: "array", items: { type: "string" } } } },
       screen: SCREEN
     },
     required: ["chair", "landed", "lesson"]
@@ -272,10 +273,13 @@ ${CLARIFY_RULES}
 ${contextText(b)}${hasDoc(b) ? "\n" + REVIEW_RULES : ""}`;
   if (b.step === "close") {
     const out = await tryTwice(m => callTool(`${sys}\nNow Mr. Paul, the Chair, closes the meeting with the Chair's Takeaway. No clarifying questions.`, CLOSE_TOOL,
-      `TOPIC: ${topic}\nTRANSCRIPT:\n${historyText(b.history)}`, 1500, j => j.chair && j.lesson, m));
+      `TOPIC: ${topic}\nTRANSCRIPT:\n${historyText(b.history)}`, 2200, j => j.chair && j.lesson, m));
     out.screen = cleanScreen(out.screen) || { kind: "points", title: "Chair's Takeaway", caption: out.lesson, points: (out.landed || []).map(l => ({ icon: "🗣️", head: ROLES[l.role] ? ROLES[l.role].name : "Executive", text: l.view })) };
     out.landed = (out.landed || []).filter(l => ROLES[l.role]).map(l => ({ role: l.role, view: clip(l.view, 160) }));
     out.chair = clip(out.chair, 900); out.lesson = clip(out.lesson, 200);
+    const steps = a => (Array.isArray(a) ? a : []).map(x => clip(x, 160)).filter(Boolean).slice(0, 3);
+    const pl = out.plan && typeof out.plan === "object" ? { d30: steps(out.plan.d30), d60: steps(out.plan.d60), d90: steps(out.plan.d90) } : null;
+    out.plan = pl && (pl.d30.length + pl.d60.length + pl.d90.length) ? pl : null;
     return out;
   }
   const lastRole = ROLES[b.lastRole] ? ROLES[b.lastRole].name : "last speaker";

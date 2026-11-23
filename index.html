@@ -1829,11 +1829,20 @@ function paintDefine(){
   };
 }
 
+// 30/60/90-day action plan from the Chair's Takeaway (on screen and in the downloaded notes).
+function planHTML(p, onScreen){
+  if (!p) return "";
+  const col = (lab, arr) => arr && arr.length ? `<div style="flex:1;min-width:160px"><b>${lab}</b><ul style="margin:4px 0 0;padding-left:18px">${arr.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
+  return (onScreen ? `<div class="note" style="margin:12px 0 4px">Your 30/60/90-Day Action Plan</div>` : `<h2>30/60/90-Day Action Plan</h2>`) +
+    `<div style="display:flex;gap:14px;flex-wrap:wrap">${col("First 30 days", p.d30)}${col("By day 60", p.d60)}${col("By day 90", p.d90)}</div>` +
+    `<p style="font-size:12px;opacity:.75;margin:6px 0 0">A learning exercise, not professional advice. Talk to a qualified advisor before big decisions.</p>`;
+}
 function showAdjourn(j){
   const A = $("adjourn");
   A.innerHTML = `<h3>🔨 Meeting adjourned</h3><div class="note" style="margin:0">Chair's Takeaway</div>
     <ul>${(j.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul>
     <div class="lesson">💡 ${esc(j.lesson || "")}</div>
+    ${planHTML(j.plan, true)}
     <div class="acts"><button class="act gold" id="adDl" type="button">⬇ Download meeting notes</button><button class="act" id="adMore" type="button">➕ Reopen and keep going</button><button class="act" id="adNew" type="button">↺ New meeting</button><button class="act" id="adBrief" type="button">🎤 Get a briefing on this</button></div>`;
   A.classList.remove("hide");
   $("adDl").onclick = downloadNotes;
@@ -1871,7 +1880,7 @@ function downloadNotes(){
   const brief = briefText();
   const T = S.takeaway;
   let summary = "";
-  if (T) summary = `<h2>Chair's Takeaway</h2><ul>${(T.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul><p class="lesson">💡 ${esc(T.lesson || "")}</p>`;
+  if (T) summary = `<h2>Chair's Takeaway</h2><ul>${(T.landed || []).map(l => `<li><b>${esc(ROLES[l.role] ? ROLES[l.role].name : "")}:</b> ${esc(l.view)}</li>`).join("")}</ul><p class="lesson">💡 ${esc(T.lesson || "")}</p>${planHTML(T.plan, false)}`;
   else {
     const heads = S.screens.map(sc => sc && sc.title).filter(Boolean);
     summary = `<h2>Summary</h2>${S.mode === "meeting" ? `<p class="soft">This meeting wasn't formally closed, so here are the topics covered on the wall screen.</p>` : ""}<ul>${heads.map(h => `<li>${esc(h)}</li>`).join("")}</ul>`;
